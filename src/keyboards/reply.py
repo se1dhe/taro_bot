@@ -1,25 +1,37 @@
 """
 Клавиатуры для бота
 """
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
+from config import WEBAPP_URL
+import urllib.parse
 
 def get_main_keyboard() -> ReplyKeyboardMarkup:
     """
     Создает основную клавиатуру с главными действиями
     """
-    keyboard = [
-        [KeyboardButton(text="🎴 Задать вопрос")],
-        [KeyboardButton(text="💳 Купить расклады")],
-        [KeyboardButton(text="❓ Как работает бот")]
-    ]
-    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🎴 Задать вопрос")],
+            [KeyboardButton(text="💳 Купить подписку")],
+            [KeyboardButton(text="ℹ️ Помощь")]
+        ],
+        resize_keyboard=True
+    )
+    return keyboard
 
-def get_question_actions_keyboard() -> ReplyKeyboardMarkup:
+def get_question_actions_keyboard(question: str) -> ReplyKeyboardMarkup:
     """
     Создает клавиатуру для действий после ввода вопроса
     """
-    keyboard = [
-        [KeyboardButton(text="🃏 Выбрать карты")],
-        [KeyboardButton(text="⬅️ Вернуться назад")]
-    ]
-    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True) 
+    encoded_question = urllib.parse.quote(question)
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(
+                text="🃏 Выбрать карты",
+                web_app=WebAppInfo(url=f"{WEBAPP_URL}?question={encoded_question}")
+            )],
+            [KeyboardButton(text="⬅️ Вернуться назад")]
+        ],
+        resize_keyboard=True
+    )
+    return keyboard 

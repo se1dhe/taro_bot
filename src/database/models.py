@@ -1,7 +1,7 @@
 """
 Модели базы данных
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Float, JSON
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Float, JSON, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -27,15 +27,15 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    telegram_id = Column(Integer, unique=True, nullable=False)
-    username = Column(String(32))
-    first_name = Column(String(64))
-    last_name = Column(String(64))
-    language = Column(String(2), default="ru")
-    readings_remaining = Column(Integer, default=0)
+    telegram_id = Column(BigInteger, unique=True, nullable=False)
+    username = Column(String(32), nullable=True)
+    first_name = Column(String(64), nullable=True)
+    last_name = Column(String(64), nullable=True)
+    language = Column(String(2), nullable=True)
+    readings_remaining = Column(Integer, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, nullable=False)
-    last_activity = Column(DateTime)
+    last_activity = Column(DateTime, nullable=True)
     
     # Реферальная система
     referral_id = Column(Integer, ForeignKey("users.id"), nullable=True)
