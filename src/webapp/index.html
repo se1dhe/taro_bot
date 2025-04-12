@@ -3,48 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Выбор карт Таро</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Выберите карты</title>
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="stylesheet" href="static/css/style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 </head>
 <body>
-    <audio id="bgMusic" preload="auto" loop>
-        <source src="static/audio/background.mp3" type="audio/mpeg">
-    </audio>
+    <div class="stars"></div>
     <div class="container">
-        <h1>Выберите 3 карты</h1>
+        <h1 data-aos="fade-down" data-aos-duration="1000">Выберите 3 карты</h1>
         <div class="cards-container">
             <div class="top-row">
-                <!-- Верхний ряд из 3 карт -->
-                <div class="card" data-index="0">
-                    <img src="static/images/back.jpg" alt="Карта Таро">
+                <div class="card" data-index="0" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back"></div>
+                    </div>
                 </div>
-                <div class="card" data-index="1">
-                    <img src="static/images/back.jpg" alt="Карта Таро">
+                <div class="card" data-index="1" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back"></div>
+                    </div>
                 </div>
-                <div class="card" data-index="2">
-                    <img src="static/images/back.jpg" alt="Карта Таро">
+                <div class="card" data-index="2" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back"></div>
+                    </div>
                 </div>
             </div>
             <div class="bottom-row">
-                <!-- Нижний ряд из 4 карт -->
-                <div class="card" data-index="3">
-                    <img src="static/images/back.jpg" alt="Карта Таро">
+                <div class="card" data-index="3" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back"></div>
+                    </div>
                 </div>
-                <div class="card" data-index="4">
-                    <img src="static/images/back.jpg" alt="Карта Таро">
+                <div class="card" data-index="4" data-aos="zoom-in" data-aos-delay="500">
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back"></div>
+                    </div>
                 </div>
-                <div class="card" data-index="5">
-                    <img src="static/images/back.jpg" alt="Карта Таро">
+                <div class="card" data-index="5" data-aos="zoom-in" data-aos-delay="600">
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back"></div>
+                    </div>
                 </div>
-                <div class="card" data-index="6">
-                    <img src="static/images/back.jpg" alt="Карта Таро">
+                <div class="card" data-index="6" data-aos="zoom-in" data-aos-delay="700">
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back"></div>
+                    </div>
                 </div>
             </div>
         </div>
-        <button class="continue-btn">Продолжить</button>
-        <button id="soundToggle" class="sound-toggle">🔇</button>
+        <button class="continue-btn" data-aos="fade-up" data-aos-anchor=".cards-container">Продолжить</button>
     </div>
     <script src="static/js/app.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            easing: 'ease-out-back',
+            once: true
+        });
+    </script>
 </body>
 </html> 
