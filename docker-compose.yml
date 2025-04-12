@@ -9,6 +9,8 @@ services:
       - db
       - redis
       - migrate
+    networks:
+      - bot-network
 
   db:
     image: postgres:15
@@ -18,11 +20,15 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bot-network
 
   redis:
     image: redis:latest
     volumes:
       - redis_data:/data
+    networks:
+      - bot-network
 
   migrate:
     build: .
@@ -31,6 +37,8 @@ services:
       - .env
     depends_on:
       - db
+    networks:
+      - bot-network
 
   ngrok:
     image: ngrok/ngrok
@@ -45,6 +53,12 @@ services:
       - bot
       - db
       - redis
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
 
 volumes:
   postgres_data:

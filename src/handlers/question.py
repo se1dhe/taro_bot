@@ -22,6 +22,15 @@ from data.tarot_cards import TAROT_CARDS
 
 router = Router()
 
+# Список кнопок меню, которые нужно игнорировать в режиме ожидания вопроса
+MENU_BUTTONS = [
+    "🎴 Задать вопрос",
+    "💳 Купить подписку",
+    "ℹ️ Помощь",
+    "⬅️ Вернуться назад",
+    "🃏 Выбрать карты"
+]
+
 class QuestionStates(StatesGroup):
     """Состояния для работы с вопросами"""
     main_menu = State()            # Главное меню
@@ -47,6 +56,14 @@ async def process_question(message: types.Message, state: FSMContext, session: A
     """
     Обработчик ввода вопроса
     """
+    # Проверяем, не является ли сообщение кнопкой меню
+    if message.text in MENU_BUTTONS:
+        await message.answer(
+            "Пожалуйста, введите ваш вопрос. "
+            "Постарайтесь сформулировать его максимально четко и конкретно."
+        )
+        return
+    
     # Проверяем, есть ли текст в сообщении
     if not message.text:
         await message.answer("Пожалуйста, введите текстовый вопрос.")
@@ -199,7 +216,7 @@ async def process_webapp_data(message: types.Message, state: FSMContext, session
                 # Если не нашли в текущей масти, пробуем найти в major_arcana
                 card_info = TAROT_CARDS.get('major_arcana', {}).get(number)
             
-            if card_info:
+            if card_info and 'name' in card_info and 'ru' in card_info['name']:
                 cards_info.append(card_info)
                 card_names.append(card_info['name']['ru'])  # Добавляем русское имя карты
             else:
