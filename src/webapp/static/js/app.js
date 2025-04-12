@@ -152,9 +152,26 @@ document.addEventListener('DOMContentLoaded', () => {
     continueBtn.addEventListener('click', () => {
         if (selectedCards.size === 3 && flippedCards.size === 3) {
             const selectedIndices = Array.from(selectedCards);
-            const selectedCardImages = selectedIndices.map(index => shuffledCards[index]);
+            const selectedCardPaths = selectedIndices.map(index => shuffledCards[index]);
+            
+            // Получаем имена карт из путей
+            const selectedCardNames = selectedCardPaths.map(path => {
+                const matches = path.match(/\/(\w+)\/(\w+)\/(\d+)\.jpg$/);
+                if (matches) {
+                    const [_, suit, rank, number] = matches;
+                    return {
+                        path: path,
+                        suit: suit,
+                        rank: rank,
+                        number: parseInt(number)
+                    };
+                }
+                return null;
+            }).filter(card => card !== null);
+
+            // Отправляем данные в бота
             tg.sendData(JSON.stringify({
-                selected_cards: selectedCardImages
+                selected_cards: selectedCardNames
             }));
             tg.close();
         }

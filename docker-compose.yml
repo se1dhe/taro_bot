@@ -8,6 +8,7 @@ services:
     depends_on:
       - db
       - redis
+      - migrate
 
   db:
     image: postgres:15
@@ -22,6 +23,14 @@ services:
     image: redis:latest
     volumes:
       - redis_data:/data
+
+  migrate:
+    build: .
+    command: sh /app/scripts/migrate.sh
+    env_file:
+      - .env
+    depends_on:
+      - db
 
   ngrok:
     image: ngrok/ngrok

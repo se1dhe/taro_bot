@@ -1,14 +1,15 @@
 """
 Обработчики для работы с вопросами
 """
+import json
+import logging
+import urllib.parse
 from aiogram import Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
-import json
-import urllib.parse
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import StateFilter
 
@@ -17,6 +18,7 @@ from database.models import User, Reading
 from config import TAROT_SETTINGS, WEBAPP_URL
 from utils.tarot import get_random_tarot_cards
 from utils.openai import get_interpretation_from_openai
+from data.tarot_cards import TAROT_CARDS
 
 router = Router()
 
@@ -148,8 +150,8 @@ async def handle_choose_cards(message: types.Message, session: AsyncSession, sta
     # Отправляем клавиатуру
     await message.answer(reply_markup=keyboard)
 
-@router.message(QuestionStates.processing_reading)
-async def process_reading(message: types.Message, state: FSMContext, session: AsyncSession):
+@router.message(F.web_app_data)
+async def process_webapp_data(message: types.Message, state: FSMContext, session: AsyncSession):
     """
     Обработчик данных от веб-приложения
     """
@@ -183,30 +185,42 @@ async def process_reading(message: types.Message, state: FSMContext, session: As
             )
             await state.set_state(QuestionStates.main_menu)
             return
-        
-        # Формируем промпт для OpenAI
-        cards_info = "\n".join([
-            f"Карта {i+1}: {card['name']['ru']} - {card['meaning']['ru']}"
-            for i, card in enumerate(selected_cards)
-        ])
-        
-        prompt = f"""Вопрос: {question}
 
-Выбранные карты:
-{cards_info}
+        # Получаем информацию о картах
+        cards_info = []
+        card_names = []
+        for card in selected_cards:
+            suit = card['suit']  # cups, wands, etc.
+            number = str(card['number'])
+            
+            # Получаем описание карты из нашего файла с данными
+            card_info = TAROT_CARDS.get(suit, {}).get(number)
+            if not card_info:
+                # Если не нашли в текущей масти, пробуем найти в major_arcana
+                card_info = TAROT_CARDS.get('major_arcana', {}).get(number)
+            
+            if card_info:
+                cards_info.append(card_info)
+                card_names.append(card_info['name']['ru'])  # Добавляем русское имя карты
+            else:
+                logging.error(f"Не найдена информация о карте: {suit} {number}")
+                await message.answer(
+                    "Произошла ошибка при обработке карт. Пожалуйста, попробуйте снова.",
+                    reply_markup=get_main_keyboard()
+                )
+                return
 
-Пожалуйста, дайте подробную интерпретацию расклада, учитывая значение каждой карты и их взаимосвязь."""
-        
         # Получаем интерпретацию от OpenAI
-        interpretation = await get_interpretation_from_openai(prompt)
+        interpretation = await get_interpretation_from_openai(
+            cards=card_names,  # Передаем список имен карт
+            question=question
+        )
         
-        # Обновляем запись в базе данных
+        # Сохраняем интерпретацию в базе данных
         reading = await session.execute(
-            select(Reading).where(
-                Reading.user_id == message.from_user.id,
-                Reading.question == question,
-                Reading.interpretation == ""
-            ).order_by(Reading.created_at.desc())
+            select(Reading)
+            .where(Reading.user_id == message.from_user.id)
+            .order_by(Reading.created_at.desc())
         )
         reading = reading.scalar_one_or_none()
         
@@ -214,21 +228,23 @@ async def process_reading(message: types.Message, state: FSMContext, session: As
             reading.interpretation = interpretation
             await session.commit()
         
-        # Отправляем результат пользователю
+        # Отправляем интерпретацию пользователю
         await message.answer(
-            f"🔮 Ваш вопрос: {question}\n\n"
-            f"📜 Интерпретация:\n{interpretation}",
-            reply_markup=get_main_keyboard()
+            f"🔮 Ваш расклад:\n\n{interpretation}",
+            reply_markup=get_main_keyboard(),
+            parse_mode="Markdown"
         )
         
+        # Очищаем состояние
+        await state.clear()
+        
     except Exception as e:
-        logger.error(f"Ошибка при обработке данных от веб-приложения: {str(e)}")
+        logging.error(f"Ошибка при обработке данных веб-приложения: {str(e)}")
         await message.answer(
-            "Произошла ошибка при обработке результатов. Пожалуйста, попробуйте позже.",
+            "Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте снова.",
             reply_markup=get_main_keyboard()
         )
-    
-    await state.set_state(QuestionStates.main_menu)
+        await state.clear()
 
 @router.message(QuestionStates.main_menu)
 async def handle_main_menu(message: types.Message, session: AsyncSession):
@@ -329,6 +345,6 @@ async def choose_cards(message: types.Message, state: FSMContext):
         )
         
     except Exception as e:
-        logger.error(f"Ошибка при выборе карт: {str(e)}")
+        logging.error(f"Ошибка при выборе карт: {str(e)}")
         await message.answer("❌ Произошла ошибка при открытии веб-приложения. Пожалуйста, попробуйте позже.")
         await state.clear() 
