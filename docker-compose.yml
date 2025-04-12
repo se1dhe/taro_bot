@@ -1,0 +1,44 @@
+services:
+  bot:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis_data:/data
+
+  ngrok:
+    image: ngrok/ngrok
+    ports:
+      - "4040:4040"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTH_TOKEN}
+    command:
+      - "http"
+      - "bot:8000"
+      - "--region"
+      - "eu"
+    depends_on:
+      - bot
+      - db
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data: 

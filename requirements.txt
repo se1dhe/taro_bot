@@ -1,0 +1,11 @@
+aiogram==3.19.0
+python-dotenv==1.0.1
+aiohttp==3.9.3
+openai==1.14.0
+SQLAlchemy==2.0.28
+alembic==1.13.1
+asyncpg==0.29.0
+redis==5.0.3
+pydantic>=2.4.1,<2.6
+python-jose==3.3.0
+requests==2.31.0 
