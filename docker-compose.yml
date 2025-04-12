@@ -41,8 +41,6 @@ services:
     command:
       - "http"
       - "bot:8000"
-      - "--region"
-      - "eu"
     depends_on:
       - bot
       - db

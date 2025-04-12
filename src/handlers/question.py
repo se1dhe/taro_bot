@@ -217,9 +217,18 @@ async def process_webapp_data(message: types.Message, state: FSMContext, session
         )
         
         # Сохраняем интерпретацию в базе данных
+        user = await session.execute(
+            select(User).where(User.telegram_id == message.from_user.id)
+        )
+        user = user.scalar_one_or_none()
+        
+        if not user:
+            await message.answer("Пользователь не найден. Пожалуйста, нажмите /start")
+            return
+            
         reading = await session.execute(
             select(Reading)
-            .where(Reading.user_id == message.from_user.id)
+            .where(Reading.user_id == user.id)
             .order_by(Reading.created_at.desc())
         )
         reading = reading.scalar_one_or_none()

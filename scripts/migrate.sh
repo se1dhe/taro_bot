@@ -2,8 +2,8 @@
 
 # Ожидаем, пока база данных будет готова
 echo "Ожидаем готовности базы данных..."
-while ! nc -z db 5432; do
-  sleep 0.1
+while ! pg_isready -h db -p 5432 -U postgres; do
+  sleep 1
 done
 echo "База данных готова!"
 

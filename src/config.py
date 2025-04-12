@@ -1,9 +1,13 @@
 """
 Конфигурационный файл для бота
 """
+import logging
 from dotenv import load_dotenv
 import os
 from src.utils.ngrok import get_ngrok_url
+
+# Настройка логгера
+logger = logging.getLogger(__name__)
 
 # Загрузка переменных окружения
 load_dotenv()
