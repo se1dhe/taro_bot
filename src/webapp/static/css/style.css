@@ -5,14 +5,20 @@
 }
 
 body {
+    margin: 0;
+    padding: 0;
     font-family: Arial, sans-serif;
-    background: url('../images/bg.jpg') no-repeat center center fixed;
+    background: #000 url('../images/bg.jpg') no-repeat center center fixed;
     background-size: cover;
-    background-attachment: fixed;
-    min-height: 100vh;
     color: #fff;
-    overflow: hidden;
-    position: relative;
+    height: 100vh;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .stars {
@@ -37,70 +43,73 @@ body {
 }
 
 .container {
-    position: relative;
-    z-index: 2;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+    width: 100%;
+    padding: 8px;
+    margin: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px;
 }
 
+h1 {
+    font-size: 18px;
+    margin: 0;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
 .cards-container {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    min-height: 280px;
+}
+
+.top-row, .bottom-row {
+    display: flex;
+    gap: 8px;
     justify-content: center;
-    gap: 20px;
-    margin-bottom: 20px;
+    width: 100%;
 }
 
 .card {
-    width: 120px;
-    height: 200px;
-    perspective: 1000px;
+    width: 70px;
+    height: 120px;
     cursor: pointer;
-}
-
-.card-inner {
+    transition: transform 0.3s ease;
     position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.8s;
-    transform-style: preserve-3d;
-}
-
-.card.flipped .card-inner {
-    transform: rotateY(180deg);
-}
-
-.card-front, .card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.card-front {
-    background-color: #1a1a1a;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.card-back {
-    transform: rotateY(180deg);
-    background-color: #fff;
 }
 
 .card img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.card.selected {
+    transform: translateY(-10px);
+}
+
+.card.selected::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 3px solid #fff;
     border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+}
+
+#continue-button {
+    display: none;
 }
 
 .selected-cards {
@@ -117,9 +126,9 @@ body {
 }
 
 .selected-card {
-    width: 80px;
-    height: 130px;
-    border-radius: 5px;
+    width: 50px;
+    height: 85px;
+    border-radius: 4px;
     overflow: hidden;
 }
 
@@ -129,22 +138,114 @@ body {
     object-fit: cover;
 }
 
+@keyframes buttonGlow {
+    0% {
+        box-shadow: 0 0 15px rgba(128, 128, 255, 0.2),
+                    inset 0 0 8px rgba(128, 128, 255, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(128, 128, 255, 0.3),
+                    inset 0 0 12px rgba(128, 128, 255, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(128, 128, 255, 0.2),
+                    inset 0 0 8px rgba(128, 128, 255, 0.1);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .continue-btn {
-    padding: 10px 20px;
+    background: linear-gradient(45deg, 
+        rgba(28, 28, 45, 0.9), 
+        rgba(35, 35, 55, 0.9),
+        rgba(28, 28, 45, 0.9));
+    background-size: 200% 200%;
+    border: 1px solid rgba(128, 128, 255, 0.2);
+    color: #b8b8ff;
+    padding: 15px 40px;
     font-size: 16px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    border-radius: 30px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+    text-shadow: 0 0 8px rgba(128, 128, 255, 0.3);
+    backdrop-filter: blur(10px);
+    margin-top: 25px;
+    opacity: 0;
+    transform: translateY(30px);
+    pointer-events: none;
+    animation: buttonGlow 3s ease-in-out infinite;
 }
 
-.continue-btn:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+.continue-btn.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    animation: 
+        fadeInUp 1.2s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards,
+        buttonGlow 3s ease-in-out infinite;
 }
 
-.continue-btn:hover:not(:disabled) {
-    background-color: #45a049;
+.continue-btn:hover {
+    background: linear-gradient(45deg,
+        rgba(35, 35, 55, 0.95),
+        rgba(45, 45, 75, 0.95),
+        rgba(35, 35, 55, 0.95));
+    background-size: 200% 200%;
+    border-color: rgba(128, 128, 255, 0.4);
+    color: #d8d8ff;
+    transform: translateY(-2px);
+    box-shadow: 
+        0 0 25px rgba(128, 128, 255, 0.3),
+        inset 0 0 15px rgba(128, 128, 255, 0.2);
+    text-shadow: 0 0 12px rgba(128, 128, 255, 0.5);
+}
+
+.continue-btn:active {
+    transform: translateY(1px);
+    box-shadow: 
+        0 0 15px rgba(128, 128, 255, 0.2),
+        inset 0 0 10px rgba(128, 128, 255, 0.3);
+    transition: all 0.1s;
+}
+
+.sound-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(28, 28, 45, 0.9);
+    border: 1px solid rgba(128, 128, 255, 0.2);
+    color: #b8b8ff;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+}
+
+.sound-toggle:hover {
+    background: rgba(35, 35, 55, 0.95);
+    border-color: rgba(128, 128, 255, 0.4);
+    transform: scale(1.1);
+}
+
+.sound-toggle.playing {
+    box-shadow: 0 0 15px rgba(128, 128, 255, 0.3);
 } 

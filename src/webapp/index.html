@@ -3,31 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Таро-гадание</title>
+    <title>Выбор карт Таро</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <div class="stars"></div>
+    <audio id="bgMusic" preload="auto" loop>
+        <source src="static/audio/background.mp3" type="audio/mpeg">
+    </audio>
     <div class="container">
+        <h1>Выберите 3 карты</h1>
         <div class="cards-container">
-            <div class="card" data-card-id="0">
-                <div class="card-inner">
-                    <div class="card-front">
-                        <img src="static/images/back.jpg" alt="Рубашка карты">
-                    </div>
-                    <div class="card-back">
-                        <img src="" alt="Карта">
-                    </div>
+            <div class="top-row">
+                <!-- Верхний ряд из 3 карт -->
+                <div class="card" data-index="0">
+                    <img src="static/images/back.jpg" alt="Карта Таро">
+                </div>
+                <div class="card" data-index="1">
+                    <img src="static/images/back.jpg" alt="Карта Таро">
+                </div>
+                <div class="card" data-index="2">
+                    <img src="static/images/back.jpg" alt="Карта Таро">
                 </div>
             </div>
-            <!-- Остальные 6 карт будут добавлены динамически -->
+            <div class="bottom-row">
+                <!-- Нижний ряд из 4 карт -->
+                <div class="card" data-index="3">
+                    <img src="static/images/back.jpg" alt="Карта Таро">
+                </div>
+                <div class="card" data-index="4">
+                    <img src="static/images/back.jpg" alt="Карта Таро">
+                </div>
+                <div class="card" data-index="5">
+                    <img src="static/images/back.jpg" alt="Карта Таро">
+                </div>
+                <div class="card" data-index="6">
+                    <img src="static/images/back.jpg" alt="Карта Таро">
+                </div>
+            </div>
         </div>
-        <div class="selected-cards">
-            <h2>Выбранные карты:</h2>
-            <div class="selected-cards-container"></div>
-        </div>
-        <button id="continue-btn" class="continue-btn" disabled>Продолжить</button>
+        <button class="continue-btn">Продолжить</button>
+        <button id="soundToggle" class="sound-toggle">🔇</button>
     </div>
     <script src="static/js/app.js"></script>
 </body>
