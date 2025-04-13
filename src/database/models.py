@@ -73,6 +73,8 @@ class Payment(Base):
     currency = Column(String(3), default="RUB")
     status = Column(String(20), default="pending")
     payment_id = Column(String(100), unique=True)
+    readings_count = Column(Integer, nullable=True)  # -1 означает безлимит
+    duration_days = Column(Integer, nullable=True)
     created_at = Column(DateTime, nullable=False)
     completed_at = Column(DateTime, nullable=True)
 

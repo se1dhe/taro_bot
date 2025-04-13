@@ -25,7 +25,7 @@ router = Router()
 # Список кнопок меню, которые нужно игнорировать в режиме ожидания вопроса
 MENU_BUTTONS = [
     "🎴 Задать вопрос",
-    "💳 Купить подписку",
+    "💫 Купить расклады",
     "ℹ️ Помощь",
     "⬅️ Вернуться назад",
     "🃏 Выбрать карты"
@@ -40,11 +40,25 @@ class QuestionStates(StatesGroup):
     choosing_cards = State()        # Выбор карт
 
 @router.message(F.text == "🎴 Задать вопрос")
-async def ask_question(message: types.Message, state: FSMContext):
+async def ask_question(message: types.Message, state: FSMContext, session: AsyncSession):
     """
     Обработчик кнопки "Задать вопрос"
     """
-    await state.set_state(QuestionStates.main_menu)
+    # Проверяем, существует ли пользователь
+    user = await session.execute(
+        select(User).where(User.telegram_id == message.from_user.id)
+    )
+    user = user.scalar_one_or_none()
+    
+    if not user:
+        await message.answer("Пожалуйста, сначала нажмите /start")
+        return
+    
+    # Проверяем, есть ли у пользователя оставшиеся попытки
+    if user.readings_remaining <= 0:
+        await message.answer("У вас нет оставшихся попыток. Пожалуйста, приобретите подписку.")
+        return
+
     await message.answer(
         "Пожалуйста, введите ваш вопрос. "
         "Постарайтесь сформулировать его максимально четко и конкретно."
@@ -59,8 +73,7 @@ async def process_question(message: types.Message, state: FSMContext, session: A
     # Проверяем, не является ли сообщение кнопкой меню
     if message.text in MENU_BUTTONS:
         await message.answer(
-            "Пожалуйста, введите ваш вопрос. "
-            "Постарайтесь сформулировать его максимально четко и конкретно."
+            "Пожалуйста, введите ваш вопрос или нажмите '⬅️ Вернуться назад' для возврата в главное меню."
         )
         return
     
@@ -80,6 +93,23 @@ async def process_question(message: types.Message, state: FSMContext, session: A
         await message.answer(
             f"Вопрос слишком длинный. Максимальная длина: {TAROT_SETTINGS['max_question_length']} символов."
         )
+        return
+    
+    # Проверяем, существует ли пользователь
+    user = await session.execute(
+        select(User).where(User.telegram_id == message.from_user.id)
+    )
+    user = user.scalar_one_or_none()
+    
+    if not user:
+        await message.answer("Пожалуйста, сначала нажмите /start")
+        await state.set_state(QuestionStates.main_menu)
+        return
+    
+    # Проверяем, есть ли у пользователя оставшиеся попытки
+    if user.readings_remaining <= 0:
+        await message.answer("У вас нет оставшихся попыток. Пожалуйста, приобретите подписку.")
+        await state.set_state(QuestionStates.main_menu)
         return
     
     # Сохраняем вопрос в состоянии
@@ -261,8 +291,9 @@ async def process_webapp_data(message: types.Message, state: FSMContext, session
             parse_mode="Markdown"
         )
         
-        # Очищаем состояние
+        # Очищаем состояние и устанавливаем главное меню
         await state.clear()
+        await state.set_state(QuestionStates.main_menu)
         
     except Exception as e:
         logging.error(f"Ошибка при обработке данных веб-приложения: {str(e)}")
@@ -270,15 +301,21 @@ async def process_webapp_data(message: types.Message, state: FSMContext, session
             "Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте снова.",
             reply_markup=get_main_keyboard()
         )
+        # Очищаем состояние и устанавливаем главное меню
         await state.clear()
+        await state.set_state(QuestionStates.main_menu)
 
 @router.message(QuestionStates.main_menu)
-async def handle_main_menu(message: types.Message, session: AsyncSession):
+async def handle_main_menu(message: types.Message, session: AsyncSession, state: FSMContext):
     """
     Обработчик сообщений в главном меню
     """
-    # Если это не текстовое сообщение или это кнопка, игнорируем
-    if not message.text or message.text in ["🎴 Задать вопрос", "🃏 Выбрать карты", "⬅️ Вернуться назад"]:
+    # Если это не текстовое сообщение или это системная кнопка, игнорируем
+    if not message.text or message.text in MENU_BUTTONS:
+        return
+    
+    # Если это не команда "Задать вопрос", игнорируем
+    if message.text != "🎴 Задать вопрос":
         return
     
     # Проверяем, существует ли пользователь
@@ -296,48 +333,11 @@ async def handle_main_menu(message: types.Message, session: AsyncSession):
         await message.answer("У вас нет оставшихся попыток. Пожалуйста, приобретите подписку.")
         return
     
-    # Проверяем длину вопроса
-    if not message.text:
-        await message.answer("Пожалуйста, введите текстовый вопрос.")
-        return
-
-    if len(message.text) < TAROT_SETTINGS["min_question_length"]:
-        await message.answer(f"Вопрос слишком короткий. Минимальная длина: {TAROT_SETTINGS['min_question_length']} символов.")
-        return
-    
-    if len(message.text) > TAROT_SETTINGS["max_question_length"]:
-        await message.answer(f"Вопрос слишком длинный. Максимальная длина: {TAROT_SETTINGS['max_question_length']} символов.")
-        return
-    
-    # Создаем новое гадание
-    reading = Reading(
-        user_id=user.id,
-        question=message.text,
-        created_at=datetime.utcnow()
-    )
-    
-    session.add(reading)
-    await session.commit()
-    
-    # Уменьшаем количество оставшихся попыток
-    user.readings_remaining -= 1
-    await session.commit()
-    
-    keyboard = types.InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                types.InlineKeyboardButton(
-                    text="Выбрать карты",
-                    web_app={"url": f"{WEBAPP_URL}/index.html"}
-                )
-            ]
-        ]
-    )
-    
     await message.answer(
-        "Нажмите на кнопку ниже, чтобы открыть мини-приложение для выбора карт Таро:",
-        reply_markup=keyboard
+        "Пожалуйста, введите ваш вопрос. "
+        "Постарайтесь сформулировать его максимально четко и конкретно."
     )
+    await state.set_state(QuestionStates.waiting_for_question)
 
 @router.message(StateFilter(QuestionStates.choosing_cards))
 async def choose_cards(message: types.Message, state: FSMContext):

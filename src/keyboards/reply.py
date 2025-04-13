@@ -12,7 +12,7 @@ def get_main_keyboard() -> ReplyKeyboardMarkup:
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="🎴 Задать вопрос")],
-            [KeyboardButton(text="💳 Купить подписку")],
+            [KeyboardButton(text="💫 Купить расклады")],
             [KeyboardButton(text="ℹ️ Помощь")]
         ],
         resize_keyboard=True

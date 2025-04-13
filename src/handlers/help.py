@@ -1,14 +1,12 @@
 """
 Обработчик команды /help
 """
-from aiogram import Router, types
+from aiogram import Router, types, F
 from aiogram.filters import Command
 
 router = Router()
 
-@router.message(Command("help"))
-async def cmd_help(message: types.Message):
-    help_text = """
+HELP_TEXT = """
 Добро пожаловать в бота-таролога! 🎴
 
 Доступные команды:
@@ -27,4 +25,11 @@ async def cmd_help(message: types.Message):
 
 Пригласите друзей и получите бонусные попытки!
 """
-    await message.answer(help_text) 
+
+@router.message(Command("help"))
+async def cmd_help(message: types.Message):
+    await message.answer(HELP_TEXT)
+
+@router.message(F.text == "ℹ️ Помощь")
+async def help_button(message: types.Message):
+    await message.answer(HELP_TEXT) 

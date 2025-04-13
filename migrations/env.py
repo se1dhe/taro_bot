@@ -10,7 +10,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.database.models import Base
-from src.config import DATABASE_URL
+
+# Используем синхронный URL для миграций
+DATABASE_URL = "postgresql://postgres:postgres@db:5432/tarot_bot"
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
