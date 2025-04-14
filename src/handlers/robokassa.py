@@ -34,16 +34,16 @@ async def handle_robokassa_result(request: web.Request) -> web.Response:
     if not payment:
         return web.Response(text="payment not found")
     
-    if payment.status == 'completed':
+    if payment.status == 'COMPLETED':
         return web.Response(text="payment already processed")
     
     # Обновляем статус платежа
-    payment.status = 'completed'
+    payment.status = 'COMPLETED'
     payment.completed_at = datetime.utcnow()
     
     # Находим пользователя
     user = await session.execute(
-        select(User).where(User.telegram_id == payment.user_id)
+        select(User).where(User.id == payment.user_id)
     )
     user = user.scalar_one_or_none()
     
@@ -52,10 +52,9 @@ async def handle_robokassa_result(request: web.Request) -> web.Response:
     
     # Обновляем данные пользователя
     if payment.readings_count == -1:  # безлимитный тариф
-        user.is_unlimited = True
-        user.unlimited_until = datetime.utcnow() + timedelta(days=payment.duration_days)
+        user.subscription_end = datetime.utcnow() + timedelta(days=payment.duration_days)
     else:
-        user.readings_left += payment.readings_count
+        user.readings_remaining = (user.readings_remaining or 0) + payment.readings_count
     
     # Сохраняем изменения
     await session.commit()

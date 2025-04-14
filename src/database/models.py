@@ -1,7 +1,7 @@
 """
 Модели базы данных
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Float, JSON, BigInteger
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Float, JSON, BigInteger, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -69,11 +69,12 @@ class Payment(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    amount = Column(Float, nullable=False)
-    currency = Column(String(3), default="RUB")
-    status = Column(String(20), default="pending")
-    payment_id = Column(String(100), unique=True)
-    readings_count = Column(Integer, nullable=True)  # -1 означает безлимит
+    amount = Column(Integer, nullable=False)  # Сумма в основной валюте (рубли или stars)
+    stars_amount = Column(Integer, nullable=True)  # Сумма в stars (если оплата через stars)
+    currency = Column(Enum("RUB", "STARS", name="currency_enum"), nullable=False)
+    status = Column(Enum("PENDING", "COMPLETED", "CANCELLED", name="payment_status_enum"), nullable=False)
+    payment_id = Column(String(255), nullable=True)
+    readings_count = Column(Integer, nullable=True)
     duration_days = Column(Integer, nullable=True)
     created_at = Column(DateTime, nullable=False)
     completed_at = Column(DateTime, nullable=True)

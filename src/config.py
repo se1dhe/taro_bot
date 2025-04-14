@@ -17,41 +17,42 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в переменных окружения")
 
-ADMIN_IDS = [int(id) for id in os.getenv("ADMIN_IDS", "").split(",") if id]
-
-# Настройки OpenAI
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise ValueError("OPENAI_API_KEY не найден в переменных окружения")
-
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
-
-# Промпты для генерации ответов
-TAROT_PROMPT_RU = os.getenv("TAROT_PROMPT_RU")
-TAROT_PROMPT_EN = os.getenv("TAROT_PROMPT_EN")
+ADMIN_ID = int(os.getenv("ADMIN_ID", 0))
 
 # Настройки базы данных
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@db:5432/tarot_bot")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "bot")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASS = os.getenv("DB_PASS", "postgres")
 
 # Настройки Redis
-REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
 # Настройки Robokassa
 ROBOKASSA_LOGIN = os.getenv("ROBOKASSA_LOGIN")
 ROBOKASSA_PASSWORD1 = os.getenv("ROBOKASSA_PASSWORD1")
 ROBOKASSA_PASSWORD2 = os.getenv("ROBOKASSA_PASSWORD2")
-ROBOKASSA_TEST_MODE = os.getenv("ROBOKASSA_TEST_MODE", "True").lower() == "true"
+ROBOKASSA_TEST_MODE = os.getenv("ROBOKASSA_TEST_MODE", "1") == "1"
 
 # Настройки тарифов
-TARIFF_SMALL_PRICE = int(os.getenv("TARIFF_SMALL_PRICE", "99"))
-TARIFF_SMALL_READINGS = int(os.getenv("TARIFF_SMALL_READINGS", "3"))
+TARIFF_SMALL_PRICE_STARS = 50  # Цена в звёздах
+TARIFF_SMALL_READINGS = 10     # Количество раскладов
+
+TARIFF_MEDIUM_PRICE_STARS = 100  # Цена в звёздах
+TARIFF_MEDIUM_READINGS = 25      # Количество раскладов
+
+TARIFF_UNLIMITED_PRICE_STARS = 200  # Цена в звёздах
+
+# Настройки тарифов
+TARIFF_SMALL_PRICE_RUB = 99
+TARIFF_MEDIUM_PRICE_RUB = 199
+TARIFF_UNLIMITED_PRICE_RUB = 299
+
+# Настройки тарифов
 TARIFF_SMALL_DURATION = int(os.getenv("TARIFF_SMALL_DURATION", "30"))
-
-TARIFF_MEDIUM_PRICE = int(os.getenv("TARIFF_MEDIUM_PRICE", "199"))
-TARIFF_MEDIUM_READINGS = int(os.getenv("TARIFF_MEDIUM_READINGS", "10"))
 TARIFF_MEDIUM_DURATION = int(os.getenv("TARIFF_MEDIUM_DURATION", "30"))
-
-TARIFF_UNLIMITED_PRICE = int(os.getenv("TARIFF_UNLIMITED_PRICE", "299"))
 TARIFF_UNLIMITED_DURATION = int(os.getenv("TARIFF_UNLIMITED_DURATION", "30"))
 
 # Настройки Таро
@@ -96,11 +97,50 @@ except Exception as e:
     logger.error(f"Ошибка при получении URL от ngrok: {e}")
     WEBAPP_URL = os.getenv("WEBAPP_URL", "http://localhost:8000")
 
-# Tarot settings
+# Настройки OpenAI
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY не найден в переменных окружения")
+
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
+
+# Промпты для генерации ответов
+TAROT_PROMPT_RU = os.getenv("TAROT_PROMPT_RU")
+TAROT_PROMPT_EN = os.getenv("TAROT_PROMPT_EN")
+
+# Настройки базы данных
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@db:5432/tarot_bot")
+
+# Настройки Redis
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+
+# Цены тарифов в рублях
+TARIFF_SMALL_PRICE_RUB = 99
+TARIFF_MEDIUM_PRICE_RUB = 199
+TARIFF_UNLIMITED_PRICE_RUB = 299
+
+# Цены тарифов в Stars
+TARIFF_SMALL_PRICE_STARS = 50
+TARIFF_MEDIUM_PRICE_STARS = 100
+TARIFF_UNLIMITED_PRICE_STARS = 200
+
+# Настройки тарифов
+TARIFF_SMALL_READINGS = 10
+TARIFF_MEDIUM_READINGS = 25
+
+# Настройки тарифов
+TARIFF_SMALL_DURATION = 30
+TARIFF_MEDIUM_DURATION = 30
+TARIFF_UNLIMITED_DURATION = 30
+
+# Настройки Таро
 TAROT_SETTINGS = {
     "min_question_length": 10,
     "max_question_length": 500,
     "cards_per_reading": 3,
     "free_readings_count": 3  # Количество бесплатных гаданий для новых пользователей
 }
+
+# Настройки локализации
+DEFAULT_LANGUAGE = "ru"
 SUPPORTED_LANGUAGES = ["ru", "en"] 
