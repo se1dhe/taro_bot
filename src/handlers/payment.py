@@ -12,6 +12,7 @@ from src.config import (
     TARIFF_SMALL_PRICE_STARS, TARIFF_SMALL_READINGS,
     TARIFF_MEDIUM_PRICE_STARS, TARIFF_MEDIUM_READINGS,
     TARIFF_UNLIMITED_PRICE_STARS,
+    TARIFF_SMALL_PRICE_RUB, TARIFF_MEDIUM_PRICE_RUB, TARIFF_UNLIMITED_PRICE_RUB,
     ROBOKASSA_LOGIN, ROBOKASSA_PASSWORD1, ROBOKASSA_TEST_MODE,
     TAROT_SETTINGS, BOT_USERNAME
 )
@@ -133,31 +134,40 @@ async def process_buy(callback: CallbackQuery, state: FSMContext):
     
     # Определяем цену и количество раскладов в зависимости от тарифа
     if tariff == "small":
-        price = TARIFF_SMALL_PRICE_STARS
+        price_rub = TARIFF_SMALL_PRICE_RUB
+        price_stars = TARIFF_SMALL_PRICE_STARS
         readings = TARIFF_SMALL_READINGS
         title = "Тариф 'Малый'"
     elif tariff == "medium":
-        price = TARIFF_MEDIUM_PRICE_STARS
+        price_rub = TARIFF_MEDIUM_PRICE_RUB
+        price_stars = TARIFF_MEDIUM_PRICE_STARS
         readings = TARIFF_MEDIUM_READINGS
         title = "Тариф 'Средний'"
     else:
-        price = TARIFF_UNLIMITED_PRICE_STARS
+        price_rub = TARIFF_UNLIMITED_PRICE_RUB
+        price_stars = TARIFF_UNLIMITED_PRICE_STARS
         readings = -1  # Безлимитный
         title = "Тариф 'Безлимитный'"
     
     await state.set_state(PaymentStates.waiting_for_payment)
-    await state.update_data(tariff=tariff, payment_id=payment_id, price=price, readings=readings)
+    await state.update_data(
+        tariff=tariff, 
+        payment_id=payment_id, 
+        price_rub=price_rub,
+        price_stars=price_stars,
+        readings=readings
+    )
     
     # Формируем URL для оплаты через Robokassa
     merchant_login = ROBOKASSA_LOGIN
     password1 = ROBOKASSA_PASSWORD1
     
-    signature = f"{merchant_login}:{price}:{payment_id}:{password1}"
+    signature = f"{merchant_login}:{price_rub}:{payment_id}:{password1}"
     signature_hash = md5(signature.encode()).hexdigest()
     
     params = {
         "MerchantLogin": merchant_login,
-        "OutSum": price,
+        "OutSum": price_rub,
         "InvId": payment_id,
         "Description": f"Оплата тарифа {title}",
         "SignatureValue": signature_hash,
@@ -169,7 +179,7 @@ async def process_buy(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         f"Тариф '{title}'\n"
         f"Количество раскладов: {readings if readings != -1 else 'безлимитно'}\n"
-        f"Стоимость: {price} ⭐️\n\n"
+        f"Стоимость: {price_rub}₽ / {price_stars}⭐️\n\n"
         "Выберите способ оплаты:",
         reply_markup=get_payment_methods_keyboard(payment_id, tariff, robokassa_url)
     )
@@ -178,7 +188,7 @@ async def process_buy(callback: CallbackQuery, state: FSMContext):
 async def process_stars_payment(callback: CallbackQuery, state: FSMContext):
     """Обработка оплаты звездами"""
     data = await state.get_data()
-    price = data.get("price")
+    price_stars = data.get("price_stars")
     readings = data.get("readings")
     title = {
         "small": "Тариф 'Малый'",
@@ -192,7 +202,7 @@ async def process_stars_payment(callback: CallbackQuery, state: FSMContext):
         payload=data.get("payment_id"),
         provider_token="",  # Для Stars оставляем пустым
         currency="XTR",
-        prices=[LabeledPrice(label="XTR", amount=price)],
+        prices=[LabeledPrice(label="XTR", amount=price_stars)],
         start_parameter=data.get("payment_id")
     )
 

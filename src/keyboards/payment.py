@@ -6,7 +6,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from config import (
     TARIFF_SMALL_PRICE_STARS, TARIFF_SMALL_READINGS,
     TARIFF_MEDIUM_PRICE_STARS, TARIFF_MEDIUM_READINGS,
-    TARIFF_UNLIMITED_PRICE_STARS
+    TARIFF_UNLIMITED_PRICE_STARS,
+    TARIFF_SMALL_PRICE_RUB, TARIFF_MEDIUM_PRICE_RUB, TARIFF_UNLIMITED_PRICE_RUB
 )
 
 def get_payment_menu(user) -> InlineKeyboardMarkup:
@@ -16,19 +17,19 @@ def get_payment_menu(user) -> InlineKeyboardMarkup:
     # Добавляем тарифы
     builder.row(
         InlineKeyboardButton(
-            text=f"Тариф 'Малый' - {TARIFF_SMALL_PRICE_STARS} ⭐️",
+            text=f"Тариф 'Малый' - {TARIFF_SMALL_PRICE_RUB}₽ / {TARIFF_SMALL_PRICE_STARS}⭐️",
             callback_data="buy_small"
         )
     )
     builder.row(
         InlineKeyboardButton(
-            text=f"Тариф 'Средний' - {TARIFF_MEDIUM_PRICE_STARS} ⭐️",
+            text=f"Тариф 'Средний' - {TARIFF_MEDIUM_PRICE_RUB}₽ / {TARIFF_MEDIUM_PRICE_STARS}⭐️",
             callback_data="buy_medium"
         )
     )
     builder.row(
         InlineKeyboardButton(
-            text=f"Тариф 'Безлимитный' - {TARIFF_UNLIMITED_PRICE_STARS} ⭐️",
+            text=f"Тариф 'Безлимитный' - {TARIFF_UNLIMITED_PRICE_RUB}₽ / {TARIFF_UNLIMITED_PRICE_STARS}⭐️",
             callback_data="buy_unlimited"
         )
     )
