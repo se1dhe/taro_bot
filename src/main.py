@@ -88,6 +88,8 @@ async def create_app():
     
     # Добавляем маршруты
     app.router.add_post('/robokassa/result', robokassa.handle_robokassa_result)
+    app.router.add_get('/robokassa/success', robokassa.handle_robokassa_success)
+    app.router.add_get('/robokassa/fail', robokassa.handle_robokassa_fail)
     
     app.on_startup.append(on_startup)
     return app

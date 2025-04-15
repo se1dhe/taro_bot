@@ -8,20 +8,24 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+import urllib.parse
+from datetime import datetime
 from src.config import (
     TARIFF_SMALL_PRICE_STARS, TARIFF_SMALL_READINGS,
     TARIFF_MEDIUM_PRICE_STARS, TARIFF_MEDIUM_READINGS,
     TARIFF_UNLIMITED_PRICE_STARS,
     TARIFF_SMALL_PRICE_RUB, TARIFF_MEDIUM_PRICE_RUB, TARIFF_UNLIMITED_PRICE_RUB,
     ROBOKASSA_LOGIN, ROBOKASSA_PASSWORD1, ROBOKASSA_TEST_MODE,
+    ROBOKASSA_SUCCESS_URL, ROBOKASSA_FAIL_URL,
     TAROT_SETTINGS, BOT_USERNAME
 )
 from src.keyboards.payment import get_payment_menu, get_payment_methods_keyboard
 from src.database.database import get_user, update_user_readings
 from src.database.models import User, Payment
 import uuid
-from urllib.parse import urlencode
 from hashlib import md5
+import json
+import base64
 
 router = Router()
 
@@ -162,19 +166,58 @@ async def process_buy(callback: CallbackQuery, state: FSMContext):
     merchant_login = ROBOKASSA_LOGIN
     password1 = ROBOKASSA_PASSWORD1
     
-    signature = f"{merchant_login}:{price_rub}:{payment_id}:{password1}"
-    signature_hash = md5(signature.encode()).hexdigest()
+    # Формируем фискальные данные
+    receipt = {
+        "sno": "usn_income",
+        "items": [
+            {
+                "name": title,
+                "quantity": 1,
+                "sum": price_rub,
+                "payment_method": "full_payment",
+                "payment_object": "service",
+                "tax": "none"
+            }
+        ]
+    }
     
+    # Кодируем receipt в JSON и затем в URL-safe формат
+    receipt_json = json.dumps(receipt, ensure_ascii=False)
+    receipt_encoded = urllib.parse.quote(receipt_json)
+    
+    # Формируем строку для подписи
+    signature_params = [
+        merchant_login,      # MerchantLogin
+        str(price_rub),     # OutSum
+        payment_id,         # InvId
+        receipt_encoded,    # Receipt
+        password1           # Password1
+    ]
+    
+    # Добавляем Shp_ параметры, если они есть
+    user_id = callback.from_user.id
+    signature_params.append(f"Shp_user_id={user_id}")
+    
+    # Формируем подпись
+    signature_string = ":".join(signature_params)
+    signature_hash = md5(signature_string.encode()).hexdigest().upper()
+    
+    # Формируем параметры для URL
     params = {
         "MerchantLogin": merchant_login,
         "OutSum": price_rub,
         "InvId": payment_id,
         "Description": f"Оплата тарифа {title}",
         "SignatureValue": signature_hash,
-        "IsTest": 1 if ROBOKASSA_TEST_MODE else 0
+        "Receipt": receipt_encoded,
+        "IsTest": 1 if ROBOKASSA_TEST_MODE else 0,
+        "Culture": "ru",
+        "Encoding": "utf-8",
+        "Shp_user_id": user_id
     }
     
-    robokassa_url = f"https://auth.robokassa.ru/Merchant/Index.aspx?{urlencode(params)}"
+    # Формируем URL для оплаты
+    robokassa_url = "https://auth.robokassa.ru/Merchant/Index.aspx?" + urllib.parse.urlencode(params)
     
     await callback.message.edit_text(
         f"Тариф '{title}'\n"
@@ -242,4 +285,161 @@ async def handle_pay_support(message: Message):
     """Обработка команды поддержки по платежам"""
     await message.answer(
         "По вопросам оплаты и возврата средств обращайтесь в поддержку: @support"
-    ) 
+    )
+
+@router.callback_query(F.data.startswith("pay_robokassa_"))
+async def process_robokassa_payment(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+    """Обработка оплаты через Robokassa"""
+    data = await state.get_data()
+    payment_id = data.get("payment_id")
+    price_rub = data.get("price_rub")
+    tariff = data.get("tariff")
+    readings = data.get("readings")
+    title = {
+        "small": "Тариф 'Малый'",
+        "medium": "Тариф 'Средний'",
+        "unlimited": "Тариф 'Безлимитный'"
+    }[tariff]
+    
+    # Создаем запись о платеже в базе данных
+    user = await get_user(callback.from_user.id, session)
+    
+    # Создаем новую запись в таблице payments
+    new_payment = Payment(
+        user_id=user.id,
+        amount=price_rub,
+        currency="RUB",
+        status="PENDING",
+        payment_id=payment_id,
+        readings_count=readings,
+        duration_days=30,  # По умолчанию все тарифы на 30 дней
+        created_at=datetime.utcnow()
+    )
+    
+    session.add(new_payment)
+    await session.commit()
+    
+    # Формируем URL для оплаты через Robokassa
+    merchant_login = ROBOKASSA_LOGIN
+    password1 = ROBOKASSA_PASSWORD1
+    
+    # Формируем фискальные данные
+    receipt = {
+        "sno": "usn_income",
+        "items": [
+            {
+                "name": title,
+                "quantity": 1,
+                "sum": price_rub,
+                "payment_method": "full_payment",
+                "payment_object": "service",
+                "tax": "none"
+            }
+        ]
+    }
+    
+    # Кодируем receipt в JSON и затем в URL-safe формат
+    receipt_json = json.dumps(receipt, ensure_ascii=False)
+    receipt_encoded = urllib.parse.quote(receipt_json)
+    
+    # Формируем строку для подписи
+    signature_params = [
+        merchant_login,      # MerchantLogin
+        str(price_rub),     # OutSum
+        payment_id,         # InvId
+        receipt_encoded,    # Receipt
+        password1           # Password1
+    ]
+    
+    # Добавляем Shp_ параметры, если они есть
+    user_id = callback.from_user.id
+    signature_params.append(f"Shp_user_id={user_id}")
+    
+    # Формируем подпись
+    signature_string = ":".join(signature_params)
+    signature_hash = md5(signature_string.encode()).hexdigest().upper()
+    
+    # Формируем параметры для URL
+    params = {
+        "MerchantLogin": merchant_login,
+        "OutSum": price_rub,
+        "InvId": payment_id,
+        "Description": f"Оплата тарифа {title}",
+        "SignatureValue": signature_hash,
+        "Receipt": receipt_encoded,
+        "IsTest": 1 if ROBOKASSA_TEST_MODE else 0,
+        "Culture": "ru",
+        "Encoding": "utf-8",
+        "Shp_user_id": user_id,
+        "SuccessURL": ROBOKASSA_SUCCESS_URL,
+        "FailURL": ROBOKASSA_FAIL_URL
+    }
+    
+    # Формируем URL для оплаты
+    robokassa_url = "https://auth.robokassa.ru/Merchant/Index.aspx?" + urllib.parse.urlencode(params)
+    
+    # Отправляем пользователю ссылку на оплату
+    await callback.message.edit_text(
+        f"Оплата тарифа '{title}'\n"
+        f"Количество раскладов: {readings if readings != -1 else 'безлимитно'}\n"
+        f"Стоимость: {price_rub}₽\n\n"
+        "Перейдите по ссылке ниже для оплаты:",
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="💳 Оплатить", url=robokassa_url)],
+                [InlineKeyboardButton(text="🔄 Проверить оплату", callback_data=f"check_payment_{payment_id}")],
+                [InlineKeyboardButton(text="⬅️ Назад", callback_data="back_to_tariffs")]
+            ]
+        )
+    )
+
+@router.callback_query(F.data.startswith("check_payment_"))
+async def check_payment_status(callback: CallbackQuery, session: AsyncSession):
+    """Проверка статуса платежа"""
+    payment_id = callback.data.split("_")[2]
+    
+    # Находим платеж в базе данных
+    payment = await session.execute(
+        select(Payment).where(Payment.payment_id == payment_id)
+    )
+    payment = payment.scalar_one_or_none()
+    
+    if not payment:
+        await callback.answer("Платеж не найден", show_alert=True)
+        return
+    
+    if payment.status == "COMPLETED":
+        # Платеж успешно выполнен
+        user = await get_user(callback.from_user.id, session)
+        
+        # Обновляем информацию о количестве раскладов
+        if payment.readings_count == -1:  # безлимитный тариф
+            await update_user_readings(user.id, -1, session)
+        else:
+            current_readings = user.readings_remaining if user.readings_remaining != -1 else 0
+            new_readings = -1 if payment.readings_count == -1 or current_readings == -1 else current_readings + payment.readings_count
+            await update_user_readings(user.id, new_readings, session)
+        
+        await callback.message.edit_text(
+            "✅ Оплата успешно выполнена!\n\n"
+            f"Вам доступно {'безлимитное количество' if payment.readings_count == -1 else payment.readings_count} раскладов.",
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [InlineKeyboardButton(text="🔮 Сделать расклад", callback_data="make_reading")]
+                ]
+            )
+        )
+    else:
+        # Платеж еще не выполнен или отменен
+        await callback.message.edit_text(
+            "⏳ Ваш платеж еще обрабатывается или был отменен.\n\n"
+            "Если вы уже произвели оплату, но видите это сообщение, пожалуйста, подождите немного. "
+            "Обработка платежа может занять до 5 минут.\n\n"
+            "Вы можете проверить статус платежа повторно или вернуться к выбору тарифов.",
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [InlineKeyboardButton(text="🔄 Проверить снова", callback_data=f"check_payment_{payment_id}")],
+                    [InlineKeyboardButton(text="⬅️ Назад к тарифам", callback_data="back_to_tariffs")]
+                ]
+            )
+        ) 
