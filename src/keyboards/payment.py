@@ -9,10 +9,11 @@ from config import (
     TARIFF_UNLIMITED_PRICE_STARS
 )
 
-def get_payment_menu() -> InlineKeyboardMarkup:
+def get_payment_menu(user) -> InlineKeyboardMarkup:
     """Клавиатура с тарифами"""
     builder = InlineKeyboardBuilder()
     
+    # Добавляем тарифы
     builder.row(
         InlineKeyboardButton(
             text=f"Тариф 'Малый' - {TARIFF_SMALL_PRICE_STARS} ⭐️",
@@ -29,6 +30,13 @@ def get_payment_menu() -> InlineKeyboardMarkup:
         InlineKeyboardButton(
             text=f"Тариф 'Безлимитный' - {TARIFF_UNLIMITED_PRICE_STARS} ⭐️",
             callback_data="buy_unlimited"
+        )
+    )
+    # Добавляем кнопку для получения бесплатных раскладов
+    builder.row(
+        InlineKeyboardButton(
+            text="🎁 Получить расклады бесплатно",
+            callback_data="get_free_readings"
         )
     )
     
@@ -51,6 +59,20 @@ def get_payment_methods_keyboard(payment_id: str, tariff: str, robokassa_url: st
         InlineKeyboardButton(
             text="💳 Оплатить картой",
             url=robokassa_url
+        )
+    )
+    
+    return builder.as_markup()
+
+def get_referral_info_keyboard(user) -> InlineKeyboardMarkup:
+    """Клавиатура с информацией о рефералах"""
+    builder = InlineKeyboardBuilder()
+    
+    # Кнопка для возврата к тарифам
+    builder.row(
+        InlineKeyboardButton(
+            text="⬅️ Назад к тарифам",
+            callback_data="back_to_tariffs"
         )
     )
     

@@ -2,18 +2,22 @@
 Обработчики платежей
 """
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message, LabeledPrice, PreCheckoutQuery
+from aiogram.types import CallbackQuery, Message, LabeledPrice, PreCheckoutQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from src.config import (
     TARIFF_SMALL_PRICE_STARS, TARIFF_SMALL_READINGS,
     TARIFF_MEDIUM_PRICE_STARS, TARIFF_MEDIUM_READINGS,
     TARIFF_UNLIMITED_PRICE_STARS,
-    ROBOKASSA_LOGIN, ROBOKASSA_PASSWORD1, ROBOKASSA_TEST_MODE
+    ROBOKASSA_LOGIN, ROBOKASSA_PASSWORD1, ROBOKASSA_TEST_MODE,
+    TAROT_SETTINGS, BOT_USERNAME
 )
 from src.keyboards.payment import get_payment_menu, get_payment_methods_keyboard
 from src.database.database import get_user, update_user_readings
+from src.database.models import User, Payment
 import uuid
 from urllib.parse import urlencode
 from hashlib import md5
@@ -24,11 +28,101 @@ class PaymentStates(StatesGroup):
     waiting_for_payment = State()
 
 @router.message(F.text == "💫 Купить расклады")
-async def handle_buy_subscription(message: Message):
+async def handle_buy_subscription(message: Message, session: AsyncSession):
     """Обработка команды покупки раскладов"""
+    # Получаем информацию о пользователе
+    user = await get_user(message.from_user.id, session)
+    
     await message.answer(
         "Выберите тариф:",
-        reply_markup=get_payment_menu()
+        reply_markup=get_payment_menu(user)
+    )
+
+@router.callback_query(F.data == "get_free_readings")
+async def handle_get_free_readings(callback: CallbackQuery, session: AsyncSession):
+    """Обработка нажатия на кнопку 'Получить расклады бесплатно'"""
+    # Получаем информацию о пользователе
+    user = await get_user(callback.from_user.id, session)
+    
+    # Получаем сумму платежей от рефералов
+    total_referral_payments = 0
+    if user.referrals_count > 0:
+        referrals = await session.execute(
+            select(User).where(User.referral_id == user.id)
+        )
+        referrals = referrals.scalars().all()
+        
+        for referral in referrals:
+            payments = await session.execute(
+                select(Payment).where(Payment.user_id == referral.id)
+            )
+            payments = payments.scalars().all()
+            total_referral_payments += sum(payment.amount for payment in payments)
+    
+    # Формируем реферальную ссылку
+    referral_link = f"https://t.me/{BOT_USERNAME}?start=ref_{user.id}"
+    
+    # Создаем клавиатуру с кнопкой "Назад"
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="⬅️ Назад",
+                    callback_data="back_to_tariffs"
+                )
+            ]
+        ]
+    )
+    
+    # Показываем информацию о реферальной системе
+    await callback.message.edit_text(
+        "🎁 Получите бесплатные расклады, приглашая друзей!\n\n"
+        f"👥 Приглашено пользователей: {user.referrals_count}\n"
+        f"💰 Сумма платежей от рефералов: {total_referral_payments} ⭐️\n\n"
+        f"🔗 Ваша реферальная ссылка:\n{referral_link}",
+        reply_markup=keyboard
+    )
+
+@router.callback_query(F.data == "back_to_tariffs")
+async def handle_back_to_tariffs(callback: CallbackQuery, session: AsyncSession):
+    """Обработка нажатия на кнопку 'Назад'"""
+    # Получаем информацию о пользователе
+    user = await get_user(callback.from_user.id, session)
+    
+    await callback.message.edit_text(
+        "Выберите тариф:",
+        reply_markup=get_payment_menu(user)
+    )
+
+@router.callback_query(F.data == "show_referrals")
+async def handle_show_referrals(callback: CallbackQuery, session: AsyncSession):
+    """Обработка нажатия на кнопку 'Показать рефералов'"""
+    # Получаем информацию о пользователе
+    user = await get_user(callback.from_user.id, session)
+    
+    # Показываем информацию о рефералах
+    await callback.message.edit_text(
+        f"👥 Ваши рефералы:\n\n"
+        f"Приглашено пользователей: {user.referrals_count}\n"
+        f"Получено бонусных раскладов: {user.referrals_count * TAROT_SETTINGS['referral_bonus_readings']}\n\n"
+        "Продолжайте приглашать друзей, чтобы получать больше бонусов!",
+        reply_markup=get_referral_info_keyboard(user)
+    )
+
+@router.callback_query(F.data == "show_bonuses")
+async def handle_show_bonuses(callback: CallbackQuery, session: AsyncSession):
+    """Обработка нажатия на кнопку 'Показать бонусы'"""
+    # Получаем информацию о пользователе
+    user = await get_user(callback.from_user.id, session)
+    
+    # Показываем информацию о бонусах
+    await callback.message.edit_text(
+        "🎁 Бонусная система:\n\n"
+        f"За каждого приглашенного друга вы получаете {TAROT_SETTINGS['referral_bonus_readings']} раскладов.\n"
+        f"У вас уже приглашено {user.referrals_count} пользователей.\n"
+        f"Всего получено бонусных раскладов: {user.referrals_count * TAROT_SETTINGS['referral_bonus_readings']}\n\n"
+        "Приглашайте друзей и получайте больше бонусов!",
+        reply_markup=get_referral_info_keyboard(user)
     )
 
 @router.callback_query(F.data.startswith("buy_"))
@@ -108,13 +202,13 @@ async def process_pre_checkout(pre_checkout_query: PreCheckoutQuery):
     await pre_checkout_query.answer(ok=True)
 
 @router.message(F.successful_payment)
-async def process_successful_payment(message: Message, state: FSMContext):
+async def process_successful_payment(message: Message, state: FSMContext, session: AsyncSession):
     """Обработка успешного платежа"""
     payment_data = await state.get_data()
     readings = payment_data.get("readings")
     
     # Получаем пользователя из базы данных
-    user = await get_user(message.from_user.id, message.bot.get("db"))
+    user = await get_user(message.from_user.id, session)
     
     if user:
         # Если у пользователя уже есть расклады, добавляем новые
@@ -122,7 +216,7 @@ async def process_successful_payment(message: Message, state: FSMContext):
         new_readings = -1 if readings == -1 or current_readings == -1 else current_readings + readings
         
         # Обновляем количество раскладов
-        await update_user_readings(user.id, new_readings, message.bot.get("db"))
+        await update_user_readings(user.id, new_readings, session)
         
         await message.answer(
             f"🎉 Спасибо за оплату! Вам доступно "

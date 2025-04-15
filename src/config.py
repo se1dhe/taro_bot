@@ -17,6 +17,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в переменных окружения")
 
+BOT_USERNAME = os.getenv("BOT_USERNAME", "se1dhe_bot")
 ADMIN_ID = int(os.getenv("ADMIN_ID", 0))
 
 # Настройки базы данных
@@ -56,11 +57,15 @@ TARIFF_MEDIUM_DURATION = int(os.getenv("TARIFF_MEDIUM_DURATION", "30"))
 TARIFF_UNLIMITED_DURATION = int(os.getenv("TARIFF_UNLIMITED_DURATION", "30"))
 
 # Настройки Таро
+TAROT_READINGS_PER_DAY = int(os.getenv("TAROT_READINGS_PER_DAY", "3"))
+TAROT_READING_PRICE = int(os.getenv("TAROT_READING_PRICE", "100"))
+
+# Настройки реферальной системы
 TAROT_SETTINGS = {
-    "min_question_length": 10,
-    "max_question_length": 500,
-    "cards_per_reading": 3,
-    "free_readings_count": 3  # Количество бесплатных гаданий для новых пользователей
+    "free_readings_count": int(os.getenv("FREE_READINGS_COUNT", "3")),  # Количество бесплатных гаданий для новых пользователей
+    "referral_bonus_readings": int(os.getenv("REFERRAL_BONUS_READINGS", "1")),  # Количество бонусных гаданий за каждого реферала
+    "min_question_length": 10,  # Минимальная длина вопроса
+    "max_question_length": 500  # Максимальная длина вопроса
 }
 
 # Настройки локализации
@@ -85,10 +90,6 @@ LANGUAGE_MAPPING = {
     "pt": "en",  # Португальский -> Английский
     "default": "en"  # Для всех остальных языков -> Английский
 }
-
-# Tarot settings
-TAROT_READINGS_PER_DAY = 3
-TAROT_READING_PRICE = 100  # в рублях
 
 # WebApp settings
 try:
@@ -133,14 +134,5 @@ TARIFF_SMALL_DURATION = 30
 TARIFF_MEDIUM_DURATION = 30
 TARIFF_UNLIMITED_DURATION = 30
 
-# Настройки Таро
-TAROT_SETTINGS = {
-    "min_question_length": 10,
-    "max_question_length": 500,
-    "cards_per_reading": 3,
-    "free_readings_count": 3  # Количество бесплатных гаданий для новых пользователей
-}
-
-# Настройки локализации
-DEFAULT_LANGUAGE = "ru"
-SUPPORTED_LANGUAGES = ["ru", "en"] 
+# Настройки ngrok
+NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN") 
