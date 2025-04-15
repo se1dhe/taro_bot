@@ -3,6 +3,8 @@ services:
     build: .
     env_file:
       - .env
+    environment:
+      - WEBAPP_URL=http://bot:8000
     ports:
       - "8000:8000"
     depends_on:
@@ -37,22 +39,6 @@ services:
       - .env
     depends_on:
       - db
-    networks:
-      - bot-network
-
-  ngrok:
-    image: ngrok/ngrok
-    ports:
-      - "4040:4040"
-    environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTH_TOKEN}
-    command:
-      - "http"
-      - "bot:8000"
-    depends_on:
-      - bot
-      - db
-      - redis
     networks:
       - bot-network
 

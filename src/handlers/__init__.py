@@ -1,6 +1,6 @@
 """
 Пакет с обработчиками команд бота
 """
-from . import start, question, payment, help
+from . import start, question, payments, help, robokassa
 
-__all__ = ['start', 'question', 'payment', 'help'] 
+__all__ = ['start', 'question', 'payments', 'help', 'robokassa'] 

@@ -12,12 +12,12 @@ from aiogram.types import TelegramObject
 from aiohttp import web
 
 from config import BOT_TOKEN, DATABASE_URL, REDIS_URL
-from handlers import start, question, payment, help, robokassa
+from handlers import start, question, payments, help, robokassa
 from database.models import Base
 from src.handlers.start import router as start_router
 from src.handlers.tarot import router as tarot_router
 from src.handlers.question import router as question_router
-from src.handlers.payment import router as payment_router
+from src.handlers.payments import router as payment_router
 from src.handlers.help import router as help_router
 
 # Настройка логирования

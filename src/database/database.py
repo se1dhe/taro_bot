@@ -3,9 +3,10 @@
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from typing import Optional
 from .models import User
 
-async def get_user(telegram_id: int, session: AsyncSession) -> User | None:
+async def get_user(telegram_id: int, session: AsyncSession) -> Optional[User]:
     """Получение пользователя по telegram_id"""
     result = await session.execute(
         select(User).where(User.telegram_id == telegram_id)

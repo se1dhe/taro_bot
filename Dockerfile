@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y curl netcat-traditional postgresql-client && \
+RUN apt-get update && apt-get install -y curl netcat-traditional postgresql-client g++ build-essential && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g http-server && \
