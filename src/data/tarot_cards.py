@@ -350,7 +350,7 @@ TAROT_CARDS = {
                     "ru": "Задержки, отсутствие направления, нерешительность",
                     "en": "Delays, lack of direction, indecision"
                 },
-                "image_path": "images/minor/wands/ace.jpg"
+                "image_path": "images/minor/wands/1.jpg"
             },
             "two": {
                 "name": {
@@ -365,7 +365,7 @@ TAROT_CARDS = {
                     "ru": "Неуверенность, страх перед будущим, нерешительность",
                     "en": "Uncertainty, fear of future, indecision"
                 },
-                "image_path": "images/minor/wands/two.jpg"
+                "image_path": "images/minor/wands/2.jpg"
             },
             "three": {
                 "name": {
@@ -380,7 +380,7 @@ TAROT_CARDS = {
                     "ru": "Задержки, препятствия, отсутствие прогресса",
                     "en": "Delays, obstacles, lack of progress"
                 },
-                "image_path": "images/minor/wands/three.jpg"
+                "image_path": "images/minor/wands/3.jpg"
             },
             "four": {
                 "name": {
@@ -395,7 +395,7 @@ TAROT_CARDS = {
                     "ru": "Отсутствие стабильности, переходный период",
                     "en": "Lack of stability, transition period"
                 },
-                "image_path": "images/minor/wands/four.jpg"
+                "image_path": "images/minor/wands/4.jpg"
             },
             "five": {
                 "name": {
@@ -410,7 +410,7 @@ TAROT_CARDS = {
                     "ru": "Избегание конфликта, сотрудничество, мир",
                     "en": "Avoiding conflict, cooperation, peace"
                 },
-                "image_path": "images/minor/wands/five.jpg"
+                "image_path": "images/minor/wands/5.jpg"
             },
             "six": {
                 "name": {
@@ -425,7 +425,7 @@ TAROT_CARDS = {
                     "ru": "Задержка успеха, отсутствие признания",
                     "en": "Delayed success, lack of recognition"
                 },
-                "image_path": "images/minor/wands/six.jpg"
+                "image_path": "images/minor/wands/6.jpg"
             },
             "seven": {
                 "name": {
@@ -440,7 +440,7 @@ TAROT_CARDS = {
                     "ru": "Сдача позиций, усталость, отступление",
                     "en": "Giving up, exhaustion, retreat"
                 },
-                "image_path": "images/minor/wands/seven.jpg"
+                "image_path": "images/minor/wands/7.jpg"
             },
             "eight": {
                 "name": {
@@ -455,7 +455,7 @@ TAROT_CARDS = {
                     "ru": "Задержки, препятствия, медленный прогресс",
                     "en": "Delays, obstacles, slow progress"
                 },
-                "image_path": "images/minor/wands/eight.jpg"
+                "image_path": "images/minor/wands/8.jpg"
             },
             "nine": {
                 "name": {
@@ -470,7 +470,7 @@ TAROT_CARDS = {
                     "ru": "Усталость, слабость, отсутствие защиты",
                     "en": "Exhaustion, weakness, lack of protection"
                 },
-                "image_path": "images/minor/wands/nine.jpg"
+                "image_path": "images/minor/wands/9.jpg"
             },
             "ten": {
                 "name": {
@@ -485,7 +485,7 @@ TAROT_CARDS = {
                     "ru": "Освобождение от бремени, делегирование",
                     "en": "Release from burden, delegation"
                 },
-                "image_path": "images/minor/wands/ten.jpg"
+                "image_path": "images/minor/wands/10.jpg"
             },
             "page": {
                 "name": {
@@ -500,7 +500,7 @@ TAROT_CARDS = {
                     "ru": "Неуверенность, отсутствие направления",
                     "en": "Uncertainty, lack of direction"
                 },
-                "image_path": "images/minor/wands/page.jpg"
+                "image_path": "images/minor/wands/11.jpg"
             },
             "knight": {
                 "name": {
@@ -515,7 +515,7 @@ TAROT_CARDS = {
                     "ru": "Импульсивность, безрассудство, задержки",
                     "en": "Impulsiveness, recklessness, delays"
                 },
-                "image_path": "images/minor/wands/knight.jpg"
+                "image_path": "images/minor/wands/12.jpg"
             },
             "queen": {
                 "name": {
@@ -530,7 +530,7 @@ TAROT_CARDS = {
                     "ru": "Неуверенность, отсутствие вдохновения",
                     "en": "Insecurity, lack of inspiration"
                 },
-                "image_path": "images/minor/wands/queen.jpg"
+                "image_path": "images/minor/wands/13.jpg"
             },
             "king": {
                 "name": {
@@ -545,7 +545,7 @@ TAROT_CARDS = {
                     "ru": "Тирания, импульсивность, отсутствие контроля",
                     "en": "Tyranny, impulsiveness, lack of control"
                 },
-                "image_path": "images/minor/wands/king.jpg"
+                "image_path": "images/minor/wands/14.jpg"
             }
         },
         "cups": {
@@ -562,7 +562,7 @@ TAROT_CARDS = {
                     "ru": "Эмоциональная пустота, потеря чувств",
                     "en": "Emotional emptiness, loss of feelings"
                 },
-                "image_path": "images/minor/cups/ace.jpg"
+                "image_path": "images/minor/cups/1.jpg"
             },
             "two": {
                 "name": {
@@ -577,7 +577,7 @@ TAROT_CARDS = {
                     "ru": "Разрыв, дисгармония, неверность",
                     "en": "Breakup, disharmony, infidelity"
                 },
-                "image_path": "images/minor/cups/two.jpg"
+                "image_path": "images/minor/cups/2.jpg"
             },
             "three": {
                 "name": {
@@ -592,7 +592,7 @@ TAROT_CARDS = {
                     "ru": "Одиночество, изоляция, излишества",
                     "en": "Loneliness, isolation, excess"
                 },
-                "image_path": "images/minor/cups/three.jpg"
+                "image_path": "images/minor/cups/3.jpg"
             },
             "four": {
                 "name": {
@@ -607,7 +607,7 @@ TAROT_CARDS = {
                     "ru": "Новые возможности, принятие, движение",
                     "en": "New opportunities, acceptance, movement"
                 },
-                "image_path": "images/minor/cups/four.jpg"
+                "image_path": "images/minor/cups/4.jpg"
             },
             "five": {
                 "name": {
@@ -622,7 +622,7 @@ TAROT_CARDS = {
                     "ru": "Принятие, прощение, движение вперед",
                     "en": "Acceptance, forgiveness, moving forward"
                 },
-                "image_path": "images/minor/cups/five.jpg"
+                "image_path": "images/minor/cups/5.jpg"
             },
             "six": {
                 "name": {
@@ -637,7 +637,7 @@ TAROT_CARDS = {
                     "ru": "Живя в прошлом, неспособность двигаться вперед",
                     "en": "Living in the past, inability to move forward"
                 },
-                "image_path": "images/minor/cups/six.jpg"
+                "image_path": "images/minor/cups/6.jpg"
             },
             "seven": {
                 "name": {
@@ -652,7 +652,7 @@ TAROT_CARDS = {
                     "ru": "Ясность, принятие решений, реализм",
                     "en": "Clarity, decision making, realism"
                 },
-                "image_path": "images/minor/cups/seven.jpg"
+                "image_path": "images/minor/cups/7.jpg"
             },
             "eight": {
                 "name": {
@@ -667,7 +667,7 @@ TAROT_CARDS = {
                     "ru": "Застой, страх перемен, избегание",
                     "en": "Stagnation, fear of change, avoidance"
                 },
-                "image_path": "images/minor/cups/eight.jpg"
+                "image_path": "images/minor/cups/8.jpg"
             },
             "nine": {
                 "name": {
@@ -682,7 +682,7 @@ TAROT_CARDS = {
                     "ru": "Неудовлетворенность, материализм",
                     "en": "Dissatisfaction, materialism"
                 },
-                "image_path": "images/minor/cups/nine.jpg"
+                "image_path": "images/minor/cups/9.jpg" 
             },
             "ten": {
                 "name": {
@@ -697,7 +697,7 @@ TAROT_CARDS = {
                     "ru": "Дисгармония, семейные проблемы",
                     "en": "Disharmony, family problems"
                 },
-                "image_path": "images/minor/cups/ten.jpg"
+                "image_path": "images/minor/cups/10.jpg"
             },
             "page": {
                 "name": {
@@ -712,7 +712,7 @@ TAROT_CARDS = {
                     "ru": "Эмоциональная незрелость, иллюзии",
                     "en": "Emotional immaturity, illusions"
                 },
-                "image_path": "images/minor/cups/page.jpg"
+                "image_path": "images/minor/cups/11.jpg"
             },
             "knight": {
                 "name": {
@@ -727,7 +727,7 @@ TAROT_CARDS = {
                     "ru": "Эмоциональная нестабильность, разочарование",
                     "en": "Emotional instability, disappointment"
                 },
-                "image_path": "images/minor/cups/knight.jpg"
+                "image_path": "images/minor/cups/12.jpg"
             },
             "queen": {
                 "name": {
@@ -742,7 +742,7 @@ TAROT_CARDS = {
                     "ru": "Эмоциональная нестабильность, зависимость",
                     "en": "Emotional instability, dependency"
                 },
-                "image_path": "images/minor/cups/queen.jpg"
+                "image_path": "images/minor/cups/13.jpg"
             },
             "king": {
                 "name": {
@@ -757,7 +757,7 @@ TAROT_CARDS = {
                     "ru": "Эмоциональная нестабильность, манипуляции",
                     "en": "Emotional instability, manipulation"
                 },
-                "image_path": "images/minor/cups/king.jpg"
+                "image_path": "images/minor/cups/14.jpg"
             }
         },
         "swords": {
@@ -986,7 +986,7 @@ TAROT_CARDS = {
                     "ru": "Упущенные возможности, финансовые потери",
                     "en": "Missed opportunities, financial losses"
                 },
-                "image_path": "images/minor/pentacles/ace.jpg"
+                "image_path": "images/minor/pentacles/pents01.jpg"
             },
             "two": {
                 "name": {
@@ -1001,7 +1001,7 @@ TAROT_CARDS = {
                     "ru": "Дисбаланс, неорганизованность, стресс",
                     "en": "Imbalance, disorganization, stress"
                 },
-                "image_path": "images/minor/pentacles/two.jpg"
+                "image_path": "images/minor/pentacles/pents02.jpg"
             },
             "three": {
                 "name": {
@@ -1016,7 +1016,7 @@ TAROT_CARDS = {
                     "ru": "Отсутствие сотрудничества, некомпетентность",
                     "en": "Lack of cooperation, incompetence"
                 },
-                "image_path": "images/minor/pentacles/three.jpg"
+                "image_path": "images/minor/pentacles/pents03.jpg"
             },
             "four": {
                 "name": {
@@ -1031,7 +1031,7 @@ TAROT_CARDS = {
                     "ru": "Жадность, страх потерь, нестабильность",
                     "en": "Greed, fear of loss, instability"
                 },
-                "image_path": "images/minor/pentacles/four.jpg"
+                "image_path": "images/minor/pentacles/pents04.jpg"
             },
             "five": {
                 "name": {
@@ -1046,7 +1046,7 @@ TAROT_CARDS = {
                     "ru": "Восстановление, помощь, надежда",
                     "en": "Recovery, help, hope"
                 },
-                "image_path": "images/minor/pentacles/five.jpg"
+                "image_path": "images/minor/pentacles/pents05.jpg"
             },
             "six": {
                 "name": {
@@ -1061,7 +1061,7 @@ TAROT_CARDS = {
                     "ru": "Жадность, эгоизм, несправедливость",
                     "en": "Greed, selfishness, injustice"
                 },
-                "image_path": "images/minor/pentacles/six.jpg"
+                "image_path": "images/minor/pentacles/pents06.jpg"
             },
             "seven": {
                 "name": {
@@ -1076,7 +1076,7 @@ TAROT_CARDS = {
                     "ru": "Нетерпение, разочарование, потери",
                     "en": "Impatience, disappointment, losses"
                 },
-                "image_path": "images/minor/pentacles/seven.jpg"
+                "image_path": "images/minor/pentacles/pents07.jpg"
             },
             "eight": {
                 "name": {
@@ -1091,7 +1091,7 @@ TAROT_CARDS = {
                     "ru": "Отсутствие прогресса, лень, некомпетентность",
                     "en": "Lack of progress, laziness, incompetence"
                 },
-                "image_path": "images/minor/pentacles/eight.jpg"
+                "image_path": "images/minor/pentacles/pents08.jpg"
             },
             "nine": {
                 "name": {
@@ -1106,7 +1106,7 @@ TAROT_CARDS = {
                     "ru": "Зависимость, материальные потери",
                     "en": "Dependency, material losses"
                 },
-                "image_path": "images/minor/pentacles/nine.jpg"
+                "image_path": "images/minor/pentacles/pents09.jpg"
             },
             "ten": {
                 "name": {
@@ -1121,7 +1121,7 @@ TAROT_CARDS = {
                     "ru": "Финансовые проблемы, семейные конфликты",
                     "en": "Financial problems, family conflicts"
                 },
-                "image_path": "images/minor/pentacles/ten.jpg"
+                "image_path": "images/minor/pentacles/pents10.jpg"
             },
             "page": {
                 "name": {
@@ -1136,7 +1136,7 @@ TAROT_CARDS = {
                     "ru": "Отсутствие прогресса, лень, нерешительность",
                     "en": "Lack of progress, laziness, indecision"
                 },
-                "image_path": "images/minor/pentacles/page.jpg"
+                "image_path": "images/minor/pentacles/pents11.jpg"
             },
             "knight": {
                 "name": {
@@ -1151,7 +1151,7 @@ TAROT_CARDS = {
                     "ru": "Лень, безответственность, застой",
                     "en": "Laziness, irresponsibility, stagnation"
                 },
-                "image_path": "images/minor/pentacles/knight.jpg"
+                "image_path": "images/minor/pentacles/pents12.jpg"
             },
             "queen": {
                 "name": {
@@ -1166,7 +1166,7 @@ TAROT_CARDS = {
                     "ru": "Материализм, жадность, нестабильность",
                     "en": "Materialism, greed, instability"
                 },
-                "image_path": "images/minor/pentacles/queen.jpg"
+                "image_path": "images/minor/pentacles/pents13.jpg"
             },
             "king": {
                 "name": {
@@ -1181,7 +1181,7 @@ TAROT_CARDS = {
                     "ru": "Жадность, нестабильность, риск",
                     "en": "Greed, instability, risk"
                 },
-                "image_path": "images/minor/pentacles/king.jpg"
+                "image_path": "images/minor/pentacles/pents14.jpg"
             }
         }
     }

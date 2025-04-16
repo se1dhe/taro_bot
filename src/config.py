@@ -9,7 +9,9 @@ import os
 logger = logging.getLogger(__name__)
 
 # Загрузка переменных окружения
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env')
+logger.info(f"Загрузка переменных окружения из файла: {env_path}")
+load_dotenv(env_path)
 
 # Настройки бота
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -29,6 +31,10 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL")
 # Промпты для генерации ответов
 TAROT_PROMPT_RU = os.getenv("TAROT_PROMPT_RU")
 TAROT_PROMPT_EN = os.getenv("TAROT_PROMPT_EN")
+
+# Промты для расклада на месяц
+MONTHLY_READING_PROMPT_RU = os.getenv("MONTHLY_READING_PROMPT_RU", "")
+MONTHLY_READING_PROMPT_EN = os.getenv("MONTHLY_READING_PROMPT_EN", "")
 
 # Настройки базы данных
 DB_HOST = os.getenv("DB_HOST", "db")
@@ -76,6 +82,12 @@ TAROT_SETTINGS = {
 DEFAULT_LANGUAGE = os.getenv("DEFAULT_LANGUAGE")
 SUPPORTED_LANGUAGES = os.getenv("SUPPORTED_LANGUAGES").split(",")
 
+# WebApp settings
+WEBAPP_URL = os.getenv("WEBAPP_URL")
+if not WEBAPP_URL:
+    raise ValueError("WEBAPP_URL не найден в переменных окружения")
+logger.info(f"WEBAPP_URL: {WEBAPP_URL}")
+
 # Маппинг языков Telegram на поддерживаемые языки
 LANGUAGE_MAPPING = {
     "ru": "ru",  # Русский
@@ -94,9 +106,6 @@ LANGUAGE_MAPPING = {
     "pt": "en",  # Португальский -> Английский
     "default": "en"  # Для всех остальных языков -> Английский
 }
-
-# WebApp settings
-WEBAPP_URL = os.getenv("WEBAPP_URL", "http://localhost:8000")
 
 # Настройки Robokassa
 ROBOKASSA_LOGIN = os.getenv("ROBOKASSA_LOGIN")

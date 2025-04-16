@@ -2,7 +2,7 @@
 Клавиатуры для бота
 """
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
-from config import WEBAPP_URL
+from src.config import WEBAPP_URL
 import urllib.parse
 
 def get_main_keyboard() -> ReplyKeyboardMarkup:
@@ -12,6 +12,10 @@ def get_main_keyboard() -> ReplyKeyboardMarkup:
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="🎴 Задать вопрос")],
+            [KeyboardButton(
+                text="📅 Расклад на месяц",
+                web_app=WebAppInfo(url=f"{WEBAPP_URL}/monthly_reading")
+            )],
             [KeyboardButton(text="💫 Купить расклады")],
             [KeyboardButton(text="ℹ️ Помощь")]
         ],

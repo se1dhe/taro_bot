@@ -1,0 +1,407 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #000 url('../images/bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    height: 100vh;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 0;
+}
+
+.stars, .twinkling, .clouds {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.stars {
+    background: url('../images/stars.png') repeat;
+    animation: stars 50s linear infinite;
+    z-index: 0;
+    opacity: 0.3;
+}
+
+@keyframes stars {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: -1000px 0;
+    }
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding-top: 40px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 60px;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    transition: opacity 0.5s ease;
+}
+
+h1.hide {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    visibility: hidden;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    perspective: 1000px;
+    grid-template-rows: repeat(4, 1fr);
+}
+
+.card {
+    width: 70px;
+    height: 120px;
+    cursor: pointer;
+    position: relative;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 0 auto;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+}
+
+.card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 0;
+    background-size: cover;
+    background-position: center;
+}
+
+.card-front {
+    transform: rotateY(180deg);
+}
+
+.card-back {
+    background-image: url('../images/back.jpg');
+}
+
+.card.selected {
+    box-shadow: 
+        0 0 20px rgba(128, 128, 255, 0.3),
+        0 0 40px rgba(88, 88, 255, 0.2),
+        inset 0 0 15px rgba(128, 128, 255, 0.2);
+    transform: translateY(-10px);
+}
+
+.card.selected::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px solid rgba(128, 128, 255, 0.4);
+    border-radius: 10px;
+    box-shadow: 
+        0 0 20px rgba(128, 128, 255, 0.3),
+        inset 0 0 15px rgba(128, 128, 255, 0.2);
+    animation: cardGlow 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes cardGlow {
+    0%, 100% {
+        box-shadow: 
+            0 0 20px rgba(128, 128, 255, 0.3),
+            inset 0 0 15px rgba(128, 128, 255, 0.2);
+    }
+    50% {
+        box-shadow: 
+            0 0 30px rgba(128, 128, 255, 0.4),
+            inset 0 0 20px rgba(128, 128, 255, 0.3);
+    }
+}
+
+.continue-btn {
+    background: linear-gradient(45deg, 
+        rgba(28, 28, 45, 0.9), 
+        rgba(35, 35, 55, 0.9),
+        rgba(28, 28, 45, 0.9));
+    border: 1px solid rgba(128, 128, 255, 0.2);
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 30px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(128, 128, 255, 0.2),
+                inset 0 0 8px rgba(128, 128, 255, 0.1);
+    animation: buttonGlow 2s ease-in-out infinite;
+}
+
+.continue-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(128, 128, 255, 0.3),
+                inset 0 0 12px rgba(128, 128, 255, 0.2);
+    background: linear-gradient(45deg, 
+        rgba(35, 35, 55, 0.95), 
+        rgba(45, 45, 70, 0.95),
+        rgba(35, 35, 55, 0.95));
+}
+
+.continue-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes buttonGlow {
+    0% {
+        box-shadow: 0 0 15px rgba(128, 128, 255, 0.2),
+                    inset 0 0 8px rgba(128, 128, 255, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(128, 128, 255, 0.3),
+                    inset 0 0 12px rgba(128, 128, 255, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(128, 128, 255, 0.2),
+                    inset 0 0 8px rgba(128, 128, 255, 0.1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes moveToCenter {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--moveX), var(--moveY)) scale(0.5);
+        opacity: 0;
+    }
+}
+
+.card.fade-out {
+    animation: fadeOut 0.5s forwards;
+}
+
+.card.selected.move-to-center {
+    animation: moveToCenter 0.8s forwards;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .cards-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 900px) {
+    .cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .cards-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        max-width: 300px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .continue-btn {
+        padding: 10px 25px;
+        font-size: 14px;
+    }
+    
+    .card {
+        width: 55px;
+        height: 95px;
+    }
+}
+
+@media (max-width: 400px) {
+    .cards-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        max-width: 280px;
+    }
+    
+    .card {
+        width: 50px;
+        height: 85px;
+    }
+}
+
+/* Стили для уведомлений */
+.notifications {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Стили для модального окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: white;
+}
+
+.modal-body {
+    margin-top: 20px;
+    color: white;
+}
+
+/* Стили для выбранных карт */
+.selected-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.selected-card {
+    width: 60px;
+    height: 90px;
+    border-radius: 5px;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+} 
