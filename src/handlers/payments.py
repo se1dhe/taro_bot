@@ -12,7 +12,10 @@ from sqlalchemy import select
 from datetime import datetime
 import uuid
 import hashlib
-import urllib.parse
+from urllib import parse
+from urllib.parse import urlparse
+import decimal
+import json
 
 from src.config import (
     TARIFF_SMALL_PRICE_RUB as TARIFF_SMALL_PRICE,
@@ -27,11 +30,7 @@ from src.config import (
     TARIFF_UNLIMITED_PRICE_STARS,
     TARIFF_UNLIMITED_DURATION,
     ROBOKASSA_LOGIN,
-    ROBOKASSA_PASSWORD1,
-    ROBOKASSA_PASSWORD2,
-    ROBOKASSA_TEST_MODE,
-    ROBOKASSA_SUCCESS_URL,
-    ROBOKASSA_FAIL_URL
+    ROBOKASSA_PASSWORD1
 )
 from src.database.models import User, Payment
 from src.database.database import get_user, update_user_readings
@@ -44,96 +43,93 @@ router = Router()
 class PaymentStates(StatesGroup):
     waiting_for_payment = State()
 
-def generate_robokassa_payment_link(out_sum, inv_id, description, culture="ru", encoding="utf-8", 
-                                  success_url=None, fail_url=None, additional_params=None):
+def calculate_signature(*args) -> str:
+    """Create signature MD5."""
+    return hashlib.md5(':'.join(str(arg) for arg in args).encode()).hexdigest()
+
+def parse_response(request: str) -> dict:
     """
-    Прямая генерация ссылки на оплату через Robokassa без использования SDK
-    
-    Args:
-        out_sum: Сумма платежа
-        inv_id: Номер инвойса (заказа)
-        description: Описание платежа
-        culture: Язык интерфейса (по умолчанию "ru")
-        encoding: Кодировка (по умолчанию "utf-8")
-        success_url: URL для перенаправления при успешной оплате
-        fail_url: URL для перенаправления при неудачной оплате
-        additional_params: Словарь с дополнительными параметрами
-        
-    Returns:
-        str: URL для оплаты
+    :param request: Link.
+    :return: Dictionary.
     """
-    # Преобразуем из строкового UUID в числовой ID, если нужно
-    if isinstance(inv_id, str) and '-' in inv_id:
-        # Используем часть UUID как числовой id
-        numeric_inv_id = int(''.join(filter(str.isdigit, inv_id))[:9])
-        logger.info(f"Преобразован UUID {inv_id} в числовой ID {numeric_inv_id}")
-        inv_id = numeric_inv_id
-    
-    # Форматируем сумму с двумя десятичными знаками
-    formatted_sum = f"{float(out_sum):.2f}"
-    
-    # Базовые параметры в нужном порядке
-    params = {
-        "MerchantLogin": ROBOKASSA_LOGIN,
-        "OutSum": formatted_sum,
-        "InvId": inv_id,
-        "Description": description,
-        "Culture": culture
+    params = {}
+    for item in urlparse(request).query.split('&'):
+        key, value = item.split('=')
+        params[key] = value
+    return params
+
+def check_signature_result(
+    order_number: int,  # invoice number
+    received_sum: decimal,  # cost of goods, RU
+    received_signature: str,  # SignatureValue
+    password: str  # Merchant password
+) -> bool:
+    signature = calculate_signature(received_sum, order_number, password)
+    if signature.lower() == received_signature.lower():
+        return True
+    return False
+
+def generate_payment_link(
+    merchant_login: str,  # Merchant login
+    merchant_password_1: str,  # Merchant password
+    cost: decimal,  # Cost of goods, RU
+    number: int,  # Invoice number
+    description: str,  # Description of the purchase
+    is_test = 0,
+    robokassa_payment_url = 'https://auth.robokassa.ru/Merchant/Index.aspx',
+) -> str:
+    """URL for redirection of the customer to the service."""
+    signature = calculate_signature(
+        merchant_login,
+        cost,
+        number,
+        merchant_password_1
+    )
+
+    data = {
+        'MerchantLogin': merchant_login,
+        'OutSum': cost,
+        'InvId': number,
+        'Description': description,
+        'SignatureValue': signature,
     }
     
-    # Добавляем IsTest, если нужно
-    if ROBOKASSA_TEST_MODE:
-        params["IsTest"] = 1
-    
-    # Формируем строку для подписи (ВАЖНО: только основные параметры)
-    # Robokassa строго требует этот порядок: login:outsum:invid:password1
-    signature_string = f"{ROBOKASSA_LOGIN}:{formatted_sum}:{inv_id}:{ROBOKASSA_PASSWORD1}"
-    
-    # Если есть дополнительные shp_ параметры, добавляем их в подпись
-    if additional_params:
-        shp_params = {}
-        for k, v in additional_params.items():
-            if k.startswith('shp_'):
-                shp_params[k] = v
+    if is_test != 0:
+        data['IsTest'] = is_test
         
-        # Сортируем shp-параметры по имени и добавляем в подпись
-        if shp_params:
-            for key, value in sorted(shp_params.items()):
-                signature_string += f":{key}={value}"
-    
-    # Вычисляем MD5 хеш подписи
-    signature_hash = hashlib.md5(signature_string.encode(encoding)).hexdigest().lower()
-    logger.info(f"Строка подписи: {signature_string}")
-    logger.info(f"Хеш подписи: {signature_hash}")
-    
-    # Добавляем подпись в параметры
-    params["SignatureValue"] = signature_hash
-    
-    # Добавляем URL для перенаправления
-    if success_url:
-        params["SuccessURL"] = success_url
-    if fail_url:
-        params["FailURL"] = fail_url
-    
-    # Добавляем дополнительные параметры
-    if additional_params:
-        for k, v in additional_params.items():
-            if k not in params:  # Избегаем дублирования
-                params[k] = v
-    
-    # Формируем URL
-    base_url = "https://auth.robokassa.ru/Merchant/Index.aspx"
-    query_string = urllib.parse.urlencode(params)
-    payment_url = f"{base_url}?{query_string}"
-    
-    logger.info(f"Сгенерированная ссылка: {payment_url}")
-    return payment_url
+    return f'{robokassa_payment_url}?{parse.urlencode(data)}'
+
+def result_payment(merchant_password_2: str, request: str) -> str:
+    """Verification of notification (ResultURL).
+    :param request: HTTP parameters.
+    """
+    param_request = parse_response(request)
+    cost = param_request['OutSum']
+    number = param_request['InvId']
+    signature = param_request['SignatureValue']
+
+    if check_signature_result(number, cost, signature, merchant_password_2):
+        return f'OK{param_request["InvId"]}'
+    return "bad sign"
+
+def check_success_payment(merchant_password_1: str, request: str) -> str:
+    """Verification of operation parameters ("cashier check") in SuccessURL script.
+    :param request: HTTP parameters
+    """
+    param_request = parse_response(request)
+    cost = param_request['OutSum']
+    number = param_request['InvId']
+    signature = param_request['SignatureValue']
+
+    if check_signature_result(number, cost, signature, merchant_password_1):
+        return "Thank you for using our service"
+    return "bad sign"
 
 @router.message(F.text == "💫 Купить расклады")
 async def handle_buy_subscription(message: Message, session: AsyncSession):
     """Обработка команды покупки раскладов"""
     logger.info("====================================")
-    logger.info("============= ВЕРСИЯ: 17 ===========")
+    logger.info("============ ВЕРСИЯ: 5  ============")
     logger.info("====================================")
     
     user = await get_user(message.from_user.id, session)
@@ -250,7 +246,7 @@ async def process_robokassa_payment(callback: CallbackQuery, state: FSMContext, 
         user = await get_user(callback.from_user.id, session)
         new_payment = Payment(
             user_id=user.id,
-            amount=price_rub,
+            amount=int(price_rub),  # Преобразуем decimal в int
             currency="RUB",
             status="PENDING",
             payment_id=payment_id,
@@ -262,14 +258,18 @@ async def process_robokassa_payment(callback: CallbackQuery, state: FSMContext, 
         session.add(new_payment)
         await session.commit()
         
-        # Генерируем ссылку на оплату через Robokassa напрямую
-        payment_link = generate_robokassa_payment_link(
-            out_sum=price_rub,
-            inv_id=payment_id,
+        # Генерируем числовой идентификатор для Robokassa из UUID
+        numeric_inv_id = int(hashlib.md5(payment_id.encode()).hexdigest()[:7], 16) % 10000000
+        logger.info(f"Преобразован UUID {payment_id} в числовой ID {numeric_inv_id}")
+        
+        # Генерируем ссылку на оплату через Robokassa
+        payment_link = generate_payment_link(
+            merchant_login=ROBOKASSA_LOGIN,
+            merchant_password_1=ROBOKASSA_PASSWORD1,
+            cost=price_rub,
+            number=numeric_inv_id,
             description=f"Оплата тарифа {data.get('tariff')}",
-            success_url=ROBOKASSA_SUCCESS_URL,
-            fail_url=ROBOKASSA_FAIL_URL,
-            additional_params={"shp_user_id": str(user.id)}
+            is_test=0
         )
         
         # Создаем клавиатуру с кнопкой для оплаты
