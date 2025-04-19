@@ -9,6 +9,7 @@ from aiogram.types import WebAppInfo
 from keyboards.reply import get_main_keyboard
 from sqlalchemy import select
 from src.database.database import async_session_maker
+from datetime import datetime
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -18,6 +19,35 @@ DEFAULT_LANGUAGE = 'ru'
 
 # Путь к директории с изображениями
 IMAGES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'webapp', 'static', 'images')
+
+def get_monthly_reading_month() -> str:
+    """
+    Определяет месяц для расклада на основе текущей даты.
+    Если текущая дата с 16 числа месяца по 15 число следующего месяца,
+    то возвращает следующий месяц.
+    """
+    now = datetime.now()
+    current_day = now.day
+    
+    if current_day >= 16:
+        # Если текущий день >= 16, то следующий месяц
+        next_month = now.month + 1
+        if next_month > 12:
+            next_month = 1
+        month_names = {
+            1: "январь", 2: "февраль", 3: "март", 4: "апрель",
+            5: "май", 6: "июнь", 7: "июль", 8: "август",
+            9: "сентябрь", 10: "октябрь", 11: "ноябрь", 12: "декабрь"
+        }
+        return month_names[next_month]
+    else:
+        # Если текущий день < 16, то текущий месяц
+        month_names = {
+            1: "январь", 2: "февраль", 3: "март", 4: "апрель",
+            5: "май", 6: "июнь", 7: "июль", 8: "август",
+            9: "сентябрь", 10: "октябрь", 11: "ноябрь", 12: "декабрь"
+        }
+        return month_names[now.month]
 
 @router.message(F.text == "📅 Расклад на месяц")
 async def handle_monthly_reading(message: types.Message):
@@ -29,13 +59,14 @@ async def handle_monthly_reading(message: types.Message):
         await message.answer("Для использования этой функции необходима подписка. Пожалуйста, приобретите подписку.")
         return
 
+    month = get_monthly_reading_month()
     await message.answer(
-        "Нажмите на кнопку ниже, чтобы открыть расклад на месяц",
+        f"Нажмите на кнопку ниже, чтобы открыть расклад на {month}",
         reply_markup=types.InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     types.InlineKeyboardButton(
-                        text="Открыть расклад",
+                        text=f"Открыть расклад на {month}",
                         web_app=types.WebAppInfo(url=f"{WEBAPP_URL}/monthly_reading")
                     )
                 ]

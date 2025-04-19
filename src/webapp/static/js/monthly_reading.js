@@ -6,27 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Константы
     const MAX_SELECTED_CARDS = 6;
     const TOTAL_CARDS = 16;
-    const REVERSED_CARD_PROBABILITY = 0.5;
     
     // Пути к картам
     const cardImages = [
         // Старшие арканы
-        '/static/images/major/0.jpg', '/static/images/major/1.jpg', '/static/images/major/2.jpg',
-        '/static/images/major/3.jpg', '/static/images/major/4.jpg', '/static/images/major/5.jpg',
-        '/static/images/major/6.jpg', '/static/images/major/7.jpg', '/static/images/major/8.jpg',
-        '/static/images/major/9.jpg', '/static/images/major/10.jpg', '/static/images/major/11.jpg',
-        '/static/images/major/12.jpg', '/static/images/major/13.jpg', '/static/images/major/14.jpg',
-        '/static/images/major/15.jpg', '/static/images/major/16.jpg', '/static/images/major/17.jpg',
-        '/static/images/major/18.jpg', '/static/images/major/19.jpg', '/static/images/major/20.jpg',
-        '/static/images/major/21.jpg',
+        'static/images/major/0.jpg', 'static/images/major/1.jpg', 'static/images/major/2.jpg',
+        'static/images/major/3.jpg', 'static/images/major/4.jpg', 'static/images/major/5.jpg',
+        'static/images/major/6.jpg', 'static/images/major/7.jpg', 'static/images/major/8.jpg',
+        'static/images/major/9.jpg', 'static/images/major/10.jpg', 'static/images/major/11.jpg',
+        'static/images/major/12.jpg', 'static/images/major/13.jpg', 'static/images/major/14.jpg',
+        'static/images/major/15.jpg', 'static/images/major/16.jpg', 'static/images/major/17.jpg',
+        'static/images/major/18.jpg', 'static/images/major/19.jpg', 'static/images/major/20.jpg',
+        'static/images/major/21.jpg',
         // Кубки
-        '/static/images/minor/cups/1.jpg', '/static/images/minor/cups/2.jpg',
-        '/static/images/minor/cups/3.jpg', '/static/images/minor/cups/4.jpg',
-        '/static/images/minor/cups/5.jpg', '/static/images/minor/cups/6.jpg',
-        '/static/images/minor/cups/7.jpg', '/static/images/minor/cups/8.jpg',
-        '/static/images/minor/cups/9.jpg', '/static/images/minor/cups/10.jpg',
-        '/static/images/minor/cups/11.jpg', '/static/images/minor/cups/12.jpg',
-        '/static/images/minor/cups/13.jpg', '/static/images/minor/cups/14.jpg'
+        'static/images/minor/cups/1.jpg', 'static/images/minor/cups/2.jpg',
+        'static/images/minor/cups/3.jpg', 'static/images/minor/cups/4.jpg',
+        'static/images/minor/cups/5.jpg', 'static/images/minor/cups/6.jpg',
+        'static/images/minor/cups/7.jpg', 'static/images/minor/cups/8.jpg',
+        'static/images/minor/cups/9.jpg', 'static/images/minor/cups/10.jpg',
+        'static/images/minor/cups/11.jpg', 'static/images/minor/cups/12.jpg',
+        'static/images/minor/cups/13.jpg', 'static/images/minor/cups/14.jpg'
     ];
 
     // Состояние
@@ -105,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Проверка условий для показа кнопки "Продолжить"
     function checkContinueButton() {
-        if (selectedCards.size === MAX_SELECTED_CARDS) {
+        if (selectedCards.size === MAX_SELECTED_CARDS && flippedCards.size === MAX_SELECTED_CARDS) {
             title.classList.add('hide');
             continueBtn.classList.add('visible');
         } else {
@@ -114,26 +113,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Обработчик нажатия на кнопку "Продолжить"
+    // Обработчик кнопки "Продолжить"
     continueBtn.addEventListener('click', () => {
-        const selectedCards = Array.from(document.querySelectorAll('.card.selected')).map(card => {
-            const isReversed = Math.random() < REVERSED_CARD_PROBABILITY;
-            return {
-                path: card.getAttribute('data-image'),
-                isReversed: isReversed
-            };
-        });
-        
-        if (selectedCards.length === 3) {
-            const data = JSON.stringify(selectedCards);
-            window.Telegram.WebApp.sendData(data);
-            window.Telegram.WebApp.close();
+        if (selectedCards.size === MAX_SELECTED_CARDS && flippedCards.size === MAX_SELECTED_CARDS) {
+            const selectedIndices = Array.from(selectedCards);
+            const selectedCardData = selectedIndices.map(index => {
+                const path = shuffledCardImages[index];
+                // Определяем, перевернута ли карта (случайно)
+                const isReversed = Math.random() < 0.5;
+                return {
+                    path: path,
+                    isReversed: isReversed
+                };
+            });
+            
+            showModal('Отправка данных...');
+            tg.sendData(JSON.stringify(selectedCardData));
+            tg.close();
         }
     });
 
     // Инициализация
-    cards.forEach((card, index) => {
-        card.setAttribute('data-image', shuffledCardImages[index]);
+    cards.forEach(card => {
         card.addEventListener('click', () => handleCardClick(card));
     });
 }); 
