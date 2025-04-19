@@ -117,10 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
     continueBtn.addEventListener('click', () => {
         if (selectedCards.size === MAX_SELECTED_CARDS && flippedCards.size === MAX_SELECTED_CARDS) {
             const selectedIndices = Array.from(selectedCards);
-            const selectedCardPaths = selectedIndices.map(index => shuffledCardImages[index]);
+            const selectedCardData = selectedIndices.map(index => {
+                const path = shuffledCardImages[index];
+                // Определяем, перевернута ли карта (случайно)
+                const isReversed = Math.random() < 0.5;
+                return {
+                    path: path,
+                    isReversed: isReversed
+                };
+            });
             
             showModal('Отправка данных...');
-            tg.sendData(JSON.stringify(selectedCardPaths));
+            tg.sendData(JSON.stringify(selectedCardData));
             tg.close();
         }
     });

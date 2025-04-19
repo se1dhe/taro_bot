@@ -11,14 +11,15 @@ from typing import Callable, Dict, Any, Awaitable
 from aiogram.types import TelegramObject
 from aiohttp import web
 
-from config import BOT_TOKEN, DATABASE_URL, REDIS_URL
-from handlers import start, question, payments, help, robokassa
-from database.models import Base
+from src.config import BOT_TOKEN, DATABASE_URL, REDIS_URL
+from src.handlers import start, question, payments, help, robokassa
+from src.database.models import Base
 from src.handlers.start import router as start_router
 from src.handlers.tarot import router as tarot_router
 from src.handlers.question import router as question_router
 from src.handlers.payments import router as payment_router
 from src.handlers.help import router as help_router
+from src.handlers.monthly_reading import router as monthly_reading_router
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -76,6 +77,7 @@ async def on_startup(app: web.Application):
     dp.include_router(start_router)
     dp.include_router(payment_router)
     dp.include_router(tarot_router)
+    dp.include_router(monthly_reading_router)  # Добавляем роутер для месячного расклада
     dp.include_router(question_router)  # Question router должен быть последним, так как он обрабатывает общие сообщения
     
     # Запуск бота
