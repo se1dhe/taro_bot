@@ -43,6 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const shuffledCards = shuffleArray([...cardImages]);
 
+    // Инициализация карт
+    cards.forEach((card, index) => {
+        card.setAttribute('data-image', shuffledCards[index]);
+        card.setAttribute('data-index', index);
+    });
+
     // Функция для обработки клика по карте
     function handleCardClick(card) {
         const index = card.getAttribute('data-index');
@@ -150,29 +156,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Обработчик для кнопки продолжить
     continueBtn.addEventListener('click', () => {
-        if (selectedCards.size === 3 && flippedCards.size === 3) {
-            const selectedIndices = Array.from(selectedCards);
-            const selectedCardPaths = selectedIndices.map(index => shuffledCards[index]);
-            
-            // Получаем имена карт из путей
-            const selectedCardNames = selectedCardPaths.map(path => {
-                const matches = path.match(/\/(\w+)\/(\w+)\/(\d+)\.jpg$/);
-                if (matches) {
-                    const [_, suit, rank, number] = matches;
-                    return {
-                        path: path,
-                        suit: suit,
-                        rank: rank,
-                        number: parseInt(number)
-                    };
-                }
-                return null;
-            }).filter(card => card !== null);
-
-            // Отправляем данные в бота
-            tg.sendData(JSON.stringify({
-                selected_cards: selectedCardNames
-            }));
+        const selectedCardData = Array.from(selectedCards).map(index => {
+            const card = document.querySelector(`[data-index="${index}"]`);
+            const path = card.getAttribute('data-image');
+            console.log('Processing path:', path); // Добавляем отладочный вывод
+            const matches = path.match(/(\w+)\/(\w+)\/(\d+)\.jpg$/);
+            if (matches) {
+                const [_, type, suit, number] = matches;
+                return {
+                    path: path,
+                    suit: suit,
+                    number: parseInt(number)
+                };
+            }
+            return null;
+        }).filter(card => card !== null);
+        
+        if (selectedCardData.length === 3) {
+            console.log('Sending data:', selectedCardData); // Добавляем отладочный вывод
+            const data = JSON.stringify(selectedCardData);
+            tg.sendData(data);
             tg.close();
         }
     });

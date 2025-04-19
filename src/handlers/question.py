@@ -212,9 +212,10 @@ async def process_webapp_data(message: types.Message, state: FSMContext, session
     try:
         # Получаем данные из веб-приложения
         data = json.loads(message.web_app_data.data)
-        selected_cards = data.get('selected_cards', [])
+        logging.info(f"Получены данные от веб-приложения: {data}")
         
-        if not selected_cards or len(selected_cards) != 3:
+        if not isinstance(data, list) or len(data) != 3:
+            logging.error(f"Неверный формат данных: {data}")
             await message.answer(
                 "Произошла ошибка при получении выбранных карт. Пожалуйста, попробуйте снова.",
                 reply_markup=get_main_keyboard()
@@ -236,26 +237,36 @@ async def process_webapp_data(message: types.Message, state: FSMContext, session
         # Получаем информацию о картах
         cards_info = []
         card_names = []
-        for card in selected_cards:
-            suit = card['suit']  # cups, wands, etc.
-            number = str(card['number'])
-            
-            # Получаем описание карты из нашего файла с данными
-            card_info = TAROT_CARDS.get(suit, {}).get(number)
-            if not card_info:
-                # Если не нашли в текущей масти, пробуем найти в major_arcana
-                card_info = TAROT_CARDS.get('major_arcana', {}).get(number)
-            
-            if card_info and 'name' in card_info and 'ru' in card_info['name']:
-                cards_info.append(card_info)
-                card_names.append(card_info['name']['ru'])  # Добавляем русское имя карты
-            else:
-                logging.error(f"Не найдена информация о карте: {suit} {number}")
-                await message.answer(
-                    "Произошла ошибка при обработке карт. Пожалуйста, попробуйте снова.",
-                    reply_markup=get_main_keyboard()
-                )
-                return
+        for card in data:
+            try:
+                suit = card.get('suit')
+                number = str(card.get('number'))
+                
+                if not suit or not number:
+                    logging.error(f"Отсутствуют обязательные поля в карте: {card}")
+                    continue
+                
+                # Получаем описание карты из нашего файла с данными
+                card_info = TAROT_CARDS.get(suit, {}).get(number)
+                if not card_info:
+                    # Если не нашли в текущей масти, пробуем найти в major_arcana
+                    card_info = TAROT_CARDS.get('major_arcana', {}).get(number)
+                
+                if card_info and 'name' in card_info and 'ru' in card_info['name']:
+                    cards_info.append(card_info)
+                    card_names.append(card_info['name']['ru'])  # Добавляем русское имя карты
+                else:
+                    logging.error(f"Не найдена информация о карте: {suit} {number}")
+            except Exception as e:
+                logging.error(f"Ошибка при обработке карты: {e}")
+                continue
+
+        if not cards_info:
+            await message.answer(
+                "Произошла ошибка при обработке карт. Пожалуйста, попробуйте снова.",
+                reply_markup=get_main_keyboard()
+            )
+            return
 
         # Получаем интерпретацию от OpenAI
         interpretation = await get_interpretation_from_openai(

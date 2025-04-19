@@ -10,6 +10,7 @@ from aiogram import BaseMiddleware
 from typing import Callable, Dict, Any, Awaitable
 from aiogram.types import TelegramObject
 from aiohttp import web
+import os
 
 from src.config import BOT_TOKEN, DATABASE_URL, REDIS_URL
 from src.handlers import start, question, payments, help, robokassa
@@ -92,6 +93,9 @@ async def create_app():
     app.router.add_post('/robokassa/result', robokassa.handle_robokassa_result)
     app.router.add_get('/robokassa/success', robokassa.handle_robokassa_success)
     app.router.add_get('/robokassa/fail', robokassa.handle_robokassa_fail)
+    
+    # Добавляем маршрут для статических файлов
+    app.router.add_static('/static/', path=os.path.join(os.path.dirname(__file__), 'webapp/static'))
     
     app.on_startup.append(on_startup)
     return app

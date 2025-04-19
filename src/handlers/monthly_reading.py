@@ -1,5 +1,5 @@
 from aiogram import Router, types, F
-from src.config import MONTHLY_READING_PROMPT_RU, WEBAPP_URL
+from src.config import MONTHLY_READING_PROMPT_RU, MONTHLY_READING_PROMPT_EN, WEBAPP_URL
 from src.database.models import User
 from src.openai_client import get_openai_response
 import json
@@ -7,9 +7,14 @@ import logging
 import os
 from aiogram.types import WebAppInfo
 from keyboards.reply import get_main_keyboard
+from sqlalchemy import select
+from src.database.database import async_session_maker
 
 router = Router()
 logger = logging.getLogger(__name__)
+
+# Константы
+DEFAULT_LANGUAGE = 'ru'
 
 # Путь к директории с изображениями
 IMAGES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'webapp', 'static', 'images')
@@ -46,8 +51,6 @@ async def handle_monthly_reading_selection(message: types.Message) -> None:
         data = json.loads(message.web_app_data.data)
         logger.info(f"Полученные данные: {data}")
         logger.info(f"Тип данных: {type(data)}")
-        logger.info(f"Длина данных: {len(data) if isinstance(data, (list, dict)) else 'не список/словарь'}")
-        logger.info(f"Структура данных: {json.dumps(data, indent=2)}")
         
         if not isinstance(data, list):
             logger.error(f"Ожидался список, получен {type(data)}")
@@ -95,7 +98,10 @@ async def handle_monthly_reading_selection(message: types.Message) -> None:
             cards_info.append(card_info)
             
             # Формируем абсолютный путь к изображению
-            image_path = os.path.join(IMAGES_DIR, *parts[2:])  # Пропускаем 'static/images'
+            if 'major' in path:
+                image_path = os.path.join(IMAGES_DIR, 'major', f"{card_number}.jpg")
+            else:
+                image_path = os.path.join(IMAGES_DIR, 'minor', suit, f"{card_number}.jpg")
             cards_images.append(image_path)
             logger.info(f"Добавлена карта: {card_info}")
             logger.info(f"Полный путь к изображению: {image_path}")
@@ -108,8 +114,23 @@ async def handle_monthly_reading_selection(message: types.Message) -> None:
         logger.info(f"Собранная информация о картах: {cards_info}")
         logger.info(f"Пути к изображениям: {cards_images}")
 
-        # Формируем промт для GPT
-        prompt = f"{MONTHLY_READING_PROMPT_RU}\n\nВыбранные карты:\n" + "\n".join(cards_info)
+        # Получаем язык пользователя
+        async with async_session_maker() as session:
+            result = await session.execute(
+                select(User).where(User.telegram_id == message.from_user.id)
+            )
+            user = result.scalar_one_or_none()
+            
+            if not user:
+                user = User(telegram_id=message.from_user.id, language=DEFAULT_LANGUAGE)
+                session.add(user)
+                await session.commit()
+                
+        user_language = user.language or DEFAULT_LANGUAGE
+        
+        # Выбираем промт в зависимости от языка
+        prompt = MONTHLY_READING_PROMPT_RU if user_language == 'ru' else MONTHLY_READING_PROMPT_EN
+        prompt += "\n\nВыбранные карты:\n" + "\n".join(cards_info)
         logger.info(f"Сформированный промт: {prompt}")
 
         # Получаем ответ от GPT
